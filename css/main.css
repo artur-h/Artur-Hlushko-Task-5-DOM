@@ -1,0 +1,112 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+    margin: 0 auto;
+    max-width: 1240px;
+}
+
+.pizza-wrapper {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+}
+
+.filter-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /*justify-content: center;*/
+    margin: 20px 0;
+}
+
+.cancel-filter {
+
+}
+
+.filter-wrapper__label {
+    margin-right: 10px;
+}
+
+.filter-wrapper__input {}
+
+.pizza {
+    position: relative;
+    margin: 20px;
+    padding: 30px;
+    max-width: 300px;
+    border: 2px solid #ff8c00;
+    border-radius: 20px;
+    box-shadow: 0 0 10px #666;
+}
+.pizza__img {
+    height: 319px;
+    width: 300px;
+    background: url("../img/pizza.png"), center, center, no-repeat;
+    background-size: cover;
+}
+.pizza__name {
+    text-align: center;
+    text-transform: uppercase;
+}
+.info {
+    margin-bottom: 30px;
+    padding: 5px;
+    border: 2px solid #000;
+    border-radius: 5px;
+}
+th {
+    vertical-align: top;
+    text-align: right;
+}
+.pizza__price {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    font-size: 40px;
+    font-weight: 700;
+}
+
+ul {
+    list-style-image: url("../img/pizza-icon.png");
+}
+
+li {
+    font-size: 20px;
+}
+
+li:not(:last-child) {
+    margin-bottom: 20px;
+}
+
+.button-list {
+    cursor: pointer;
+}
+
+.modal {
+    display: block;
+    position: absolute;
+    padding: 40px;
+    border: 3px solid #f00;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.modal__question {
+    margin-bottom: 20px;
+    text-align: center;
+}
+.modal__wrapper {
+    display: flex;
+    justify-content: space-around;
+}
+.modal__button {
+    cursor: pointer;
+}
+
+.hidden {
+    display: none;
+}
