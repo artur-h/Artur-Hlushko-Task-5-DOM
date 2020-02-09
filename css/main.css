@@ -13,16 +13,16 @@ body {
     flex-wrap: wrap;
 }
 
-.filter-wrapper {
+.list-filters {
     display: flex;
     flex-direction: column;
     align-items: center;
-    /*justify-content: center;*/
+    justify-content: center;
     margin: 20px 0;
 }
 
-.cancel-filter {
-
+.view-mode {
+    text-align: center;
 }
 
 .filter-wrapper__label {

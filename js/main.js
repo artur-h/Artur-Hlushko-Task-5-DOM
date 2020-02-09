@@ -24,42 +24,14 @@ for (let key in menu) {
         findProperty('price'),
     ));
 }
+
 let container = document.createElement('div');
 container.className = 'container';
 document.body.prepend(container);
 
 let createList = (array = pizzaList) => {
-    let mainWrapper = document.createElement('div');
-    mainWrapper.setAttribute('id', 'wrapper-list');
-    mainWrapper.className = 'wrapper-list';
-
-    let filterWrapper = document.createElement('div');
-    filterWrapper.className = 'filter-wrapper';
-    let sortByPrice = document.createElement('button');
-    sortByPrice.innerText = 'Сортировать по цене сверху вниз';
-    sortByPrice.setAttribute('id', 'sortByPrice');
-    sortByPrice.setAttribute('onclick', 'sortByPrice()');
-    let sortByPriceReverse = document.createElement('button');
-    sortByPriceReverse.innerText = 'Сортировать по цене снизу вверх';
-    sortByPriceReverse.setAttribute('id', 'sortByPriceReverse');
-    sortByPriceReverse.setAttribute('onclick', 'sortByPriceReverse()');
-    let inputWrapper = document.createElement('div');
-    inputWrapper.className = 'input-wrapper';
-    let inputName = document.createElement('input');
-    inputName.setAttribute('id', 'input-name');
-    let inputNameSubmit = document.createElement('button');
-    inputNameSubmit.innerText = 'Сортировать по имени';
-    inputNameSubmit.setAttribute('id', 'input-name-submit');
-    inputNameSubmit.setAttribute('onclick', 'sortByName()');
-    let cancelBtn = document.createElement('button');
-    cancelBtn.innerText = 'Сбросить настройки сортировки';
-    cancelBtn.setAttribute('id', 'cancel-filter');
-    cancelBtn.setAttribute('onclick', 'cancelFilter()');
-
-    inputWrapper.append(inputName, inputNameSubmit);
-
-    filterWrapper.append(sortByPrice, sortByPriceReverse, inputWrapper);
     let pizzaWrapper = document.createElement('div');
+    pizzaWrapper.setAttribute('id', 'is-list');
     pizzaWrapper.className = 'pizza-wrapper';
 
     let ul = document.createElement('ul');
@@ -71,10 +43,24 @@ let createList = (array = pizzaList) => {
     }
 
     pizzaWrapper.append(ul);
-    mainWrapper.append(filterWrapper, pizzaWrapper);
-    container.append(mainWrapper);
+    document.body.append(pizzaWrapper);
+};
 
-    mainWrapper.classList.add('hidden');
+let createListFilters = () => {
+    let filterWrapper = document.createElement('div');
+    filterWrapper.setAttribute('id', 'list-filters');
+    filterWrapper.className = 'list-filters';
+    filterWrapper.innerHTML = `
+        <button id="sort-by-price" onclick="sortByPrice()">Сортировать по цене сверху вниз</button>
+        <button id="sort-by-price-reverse" onclick="sortByPriceReverse()">Сортировать по цене снизу вверх</button>
+        <div class="input-wrapper">
+            <input type="text" id="input-name">
+            <button id="input-name-submit" onclick="sortByName()">Сортировать по имени</button>
+        </div>
+        <button id="cancel-filter" onclick="cancelFilter()">Сбросить настройки сортировки</button>
+    `;
+
+    document.body.append(filterWrapper);
 };
 
 let createGrid = (array = pizzaList) => {
@@ -101,9 +87,8 @@ let createGrid = (array = pizzaList) => {
     filterTop.append(label, filterButton);
     filterWrapper.append(filterTop);
     let pizzaWrapper = document.createElement('div');
-    pizzaWrapper.setAttribute('id', 'pizza-wrapper');
+    pizzaWrapper.setAttribute('id', 'is-grid');
     pizzaWrapper.className = 'pizza-wrapper';
-
 
     for (let i = 0; i < array.length; i++) {
 
@@ -153,8 +138,6 @@ let createGrid = (array = pizzaList) => {
 
     mainWrapper.append(filterWrapper, pizzaWrapper);
     container.append(mainWrapper);
-
-    mainWrapper.classList.add('hidden');
 };
 
 let filterByIngredient = () => {
@@ -176,8 +159,6 @@ let filterByIngredient = () => {
         let grid = document.getElementById('wrapper-grid');
         grid.remove();
         createGrid(filteredPizzaList);
-        let filteredGrid = document.getElementById('wrapper-grid');
-        filteredGrid.classList.remove('hidden');
 
         let filterWrapper = document.getElementById('filter-wrapper');
         let showFiltered = document.createElement('div');
@@ -201,8 +182,6 @@ let cancelFilterByIngredient = () => {
     let grid = document.getElementById('wrapper-grid');
     grid.remove();
     createGrid();
-    let startGrid = document.getElementById('wrapper-grid');
-    startGrid.classList.remove('hidden');
 };
 
 let sortByPrice = () => {
@@ -225,8 +204,6 @@ let sortByPrice = () => {
     let list = document.getElementById('wrapper-list');
     list.remove();
     createList(filteredList);
-    let newFilteredList = document.getElementById('wrapper-list');
-    newFilteredList.classList.remove('hidden');
 };
 
 let sortByPriceReverse = () => {
@@ -249,8 +226,6 @@ let sortByPriceReverse = () => {
     let list = document.getElementById('wrapper-list');
     list.remove();
     createList(filteredList);
-    let newFilteredList = document.getElementById('wrapper-list');
-    newFilteredList.classList.remove('hidden');
 };
 
 let sortByName = () => {
@@ -258,103 +233,67 @@ let sortByName = () => {
     let textInput = document.getElementById('input-name');
     let textInputValue = textInput.value;
 
-    if (textInputValue === '') alert('Введите название пиццы для фильтра');
+    if (textInputValue === '') return alert('Введите название пиццы для фильтра');
 
     for (let i = 0; i < pizzaList.length; i++) {
         if (pizzaList[i].name.includes(textInputValue)) filteredPizzaList.push(pizzaList[i]);
     }
 
+    if (filteredPizzaList.length === 0) return alert('Пицца с таким именем не найдена');
+
     let list = document.getElementById('wrapper-list');
     list.remove();
     createList(filteredPizzaList);
-    let newFilteredList = document.getElementById('wrapper-list');
-    newFilteredList.classList.remove('hidden');
 };
-
-let cancelFilter = () => {
-
-};
-
-createList();
-createGrid();
-
-
-let changeToList = document.createElement('button');
-changeToList.className = 'button-list';
-changeToList.innerText = 'List view';
-
-let changeToGrid = document.createElement('button');
-changeToGrid.className = 'button-list';
-changeToGrid.innerText = 'Grid view';
-
-changeToList.addEventListener('click', () => {
-    let wrapper = document.getElementById('wrapper-grid');
-
-    if (wrapper) {
-        wrapper.remove();
-        createList();
-        let list = document.getElementById('wrapper-list');
-        list.classList.remove('hidden');
-    } else {
-        alert('Already in List view mode');
-    }
-});
-
-changeToGrid.addEventListener('click', () => {
-    let wrapper = document.getElementById('wrapper-list');
-
-    if (wrapper) {
-        wrapper.remove();
-        createGrid();
-        let grid = document.getElementById('wrapper-grid');
-        grid.classList.remove('hidden');
-    } else {
-        alert('Already in Grid view mode');
-    }
-});
 
 let modal = document.createElement('div');
 modal.className = 'modal';
-let modalQuestion = document.createElement('div');
-modalQuestion.className = 'modal__question';
-modalQuestion.innerText = 'В каком режиме отобразить меню?';
-let modalWrapper = document.createElement('div');
-modalWrapper.className = 'modal__wrapper';
-let viewList = document.createElement('button');
-viewList.className = 'modal__button';
-viewList.innerText = 'Режим списка';
-let viewGrid = document.createElement('button');
-viewGrid.className = 'modal__button';
-viewGrid.innerText = 'Режим сетки';
-modalWrapper.append(viewList, viewGrid);
-modal.append(modalQuestion, modalWrapper);
+modal.innerHTML = `
+    <div class="modal__question">В каком режиме просмотра отобразить меню?</div>
+    <div class="modal__wrapper">
+        <button class="modal__button" id="list-mode">Режим списка</button>
+        <button class="modal__button" id="grid-mode">Режим сетки</button>
+    </div>
+`;
 document.body.prepend(modal);
 
-viewList.addEventListener('click', () => {
-    let wrapperGrid = document.getElementById('wrapper-grid');
-    wrapperGrid.classList.remove('hidden');
-    wrapperGrid.remove();
+let firstListMode = document.getElementById('list-mode').addEventListener('click', firstSelectedViewMode);
+let firstGridMode = document.getElementById('grid-mode').addEventListener('click', firstSelectedViewMode);
 
-    modal.classList.add('hidden');
+function firstSelectedViewMode(e) {
+    modal.remove();
+    if (e.target.id === 'list-mode') {
+        createListFilters();
+        createList();
+    }
+    if (e.target.id === 'grid-mode') createGrid();
 
-    let wrapperList = document.getElementById('wrapper-list');
-    wrapperList.classList.remove('hidden');
+    let viewMode = document.createElement('div');
+    viewMode.className = 'view-mode';
+    viewMode.innerHTML = `
+        <div class="view-mode" id="view-mode">
+            <button class="view-mode__button" id="change-to-list" onclick="changeViewMode(this)" >List view</button>
+            <button class="view-mode__button" id="change-to-grid" onclick="changeViewMode(this)">Grid view</button>
+        </div>
+    `;
+    document.body.prepend(viewMode);
+}
 
-    document.body.prepend(changeToList);
-    document.body.prepend(changeToGrid);
-});
+let changeViewMode = elem => {
+    let listMode = document.getElementById('is-list');
+    let gridMode = document.getElementById('is-grid');
 
-viewGrid.addEventListener('click', () => {
-    let wrapperList = document.getElementById('wrapper-list');
-    wrapperList.classList.remove('hidden');
-    wrapperList.remove();
+    if (elem.id === 'change-to-list' && !listMode) {
+        gridMode.remove();
+        createList();
+    } else if (elem.id === 'change-to-list' && listMode) {
+        alert('Режим просмотра "Список" - уже включен.');
+    }
 
-    modal.classList.add('hidden');
-
-    let wrapperGrid = document.getElementById('wrapper-grid');
-    wrapperGrid.classList.remove('hidden');
-
-    document.body.prepend(changeToList);
-    document.body.prepend(changeToGrid);
-});
-
+    if (elem.id === 'change-to-grid' && !gridMode) {
+        listMode.remove();
+        createGrid();
+    } else if (elem.id === 'change-to-grid' && gridMode) {
+        alert('Режим просмотра "Сетка" - уже включен.');
+    }
+};
