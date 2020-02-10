@@ -24,42 +24,14 @@ for (let key in menu) {
         findProperty('price'),
     ));
 }
+
 let container = document.createElement('div');
 container.className = 'container';
 document.body.prepend(container);
 
 let createList = (array = pizzaList) => {
-    let mainWrapper = document.createElement('div');
-    mainWrapper.setAttribute('id', 'wrapper-list');
-    mainWrapper.className = 'wrapper-list';
-
-    let filterWrapper = document.createElement('div');
-    filterWrapper.className = 'filter-wrapper';
-    let sortByPrice = document.createElement('button');
-    sortByPrice.innerText = 'Сортировать по цене сверху вниз';
-    sortByPrice.setAttribute('id', 'sortByPrice');
-    sortByPrice.setAttribute('onclick', 'sortByPrice()');
-    let sortByPriceReverse = document.createElement('button');
-    sortByPriceReverse.innerText = 'Сортировать по цене снизу вверх';
-    sortByPriceReverse.setAttribute('id', 'sortByPriceReverse');
-    sortByPriceReverse.setAttribute('onclick', 'sortByPriceReverse()');
-    let inputWrapper = document.createElement('div');
-    inputWrapper.className = 'input-wrapper';
-    let inputName = document.createElement('input');
-    inputName.setAttribute('id', 'input-name');
-    let inputNameSubmit = document.createElement('button');
-    inputNameSubmit.innerText = 'Сортировать по имени';
-    inputNameSubmit.setAttribute('id', 'input-name-submit');
-    inputNameSubmit.setAttribute('onclick', 'sortByName()');
-    let cancelBtn = document.createElement('button');
-    cancelBtn.innerText = 'Сбросить настройки сортировки';
-    cancelBtn.setAttribute('id', 'cancel-filter');
-    cancelBtn.setAttribute('onclick', 'cancelFilter()');
-
-    inputWrapper.append(inputName, inputNameSubmit);
-
-    filterWrapper.append(sortByPrice, sortByPriceReverse, inputWrapper);
     let pizzaWrapper = document.createElement('div');
+    pizzaWrapper.setAttribute('id', 'is-list');
     pizzaWrapper.className = 'pizza-wrapper';
 
     let ul = document.createElement('ul');
@@ -71,39 +43,29 @@ let createList = (array = pizzaList) => {
     }
 
     pizzaWrapper.append(ul);
-    mainWrapper.append(filterWrapper, pizzaWrapper);
-    container.append(mainWrapper);
+    container.append(pizzaWrapper);
+};
 
-    mainWrapper.classList.add('hidden');
+let createListFilters = () => {
+    let filterWrapper = document.createElement('div');
+    filterWrapper.setAttribute('id', 'list-filters');
+    filterWrapper.className = 'list-filters';
+    filterWrapper.innerHTML = `
+        <button id="sort-by-price" onclick="sortByPrice()">Сортировать по цене сверху вниз</button>
+        <button id="sort-by-price-reverse" onclick="sortByPriceReverse()">Сортировать по цене снизу вверх</button>
+        <div class="input-wrapper">
+            <input type="text" id="input-name">
+            <button id="input-name-submit" onclick="sortByName()">Сортировать по имени</button>
+        </div>
+    `;
+
+    container.append(filterWrapper);
 };
 
 let createGrid = (array = pizzaList) => {
-    let mainWrapper = document.createElement('div');
-    mainWrapper.setAttribute('id', 'wrapper-grid');
-    mainWrapper.className = 'wrapper-grid';
-
-    let filterWrapper = document.createElement('div');
-    filterWrapper.setAttribute('id', 'filter-wrapper');
-    filterWrapper.className = 'filter-wrapper';
-    let inputText = document.createElement('input');
-    inputText.setAttribute('id', 'filterInput');
-    inputText.className = 'filter-wrapper__input';
-    let label = document.createElement('label');
-    label.innerText = 'Фильтровать по одному ингредиенту: ';
-    label.className = 'filter-wrapper__label';
-    label.append(inputText);
-    let filterButton = document.createElement('button');
-    filterButton.setAttribute('onclick', 'filterByIngredient()');
-    filterButton.innerText = 'Фильтровать';
-    let filterTop = document.createElement('div');
-    filterTop.setAttribute('id', 'filterTop');
-    filterTop.className = 'filter-wrapper__top';
-    filterTop.append(label, filterButton);
-    filterWrapper.append(filterTop);
     let pizzaWrapper = document.createElement('div');
-    pizzaWrapper.setAttribute('id', 'pizza-wrapper');
+    pizzaWrapper.setAttribute('id', 'is-grid');
     pizzaWrapper.className = 'pizza-wrapper';
-
 
     for (let i = 0; i < array.length; i++) {
 
@@ -124,7 +86,6 @@ let createGrid = (array = pizzaList) => {
         let tdList = [array[i].ingredients, array[i].calories];
 
         for (let j = 0; j < 2; j++) {
-
             let tr = document.createElement('tr');
             let th = document.createElement('th');
             th.innerText = thList[j];
@@ -151,10 +112,24 @@ let createGrid = (array = pizzaList) => {
         pizzaWrapper.append(pizza);
     }
 
-    mainWrapper.append(filterWrapper, pizzaWrapper);
-    container.append(mainWrapper);
+    container.append(pizzaWrapper);
+};
 
-    mainWrapper.classList.add('hidden');
+let createGridFilters = () => {
+    let filterWrapper = document.createElement('div');
+    filterWrapper.setAttribute('id', 'grid-filters');
+    filterWrapper.className = 'grid-filters';
+    filterWrapper.innerHTML = `
+        <div class="grid-filters__top" id="filterTop">
+            <label class="grid-filters__label">
+                Фильтровать по одному ингредиенту: 
+                <input type="text" id="filterInput" class="grid-filters__input">
+            </label>
+            <button onclick="filterByIngredient()">Фильтровать</button>
+        </div>
+    `;
+
+    container.append(filterWrapper);
 };
 
 let filterByIngredient = () => {
@@ -172,25 +147,32 @@ let filterByIngredient = () => {
         }
     }
 
-    if (filteredPizzaList.length !== 0 && filteredPizzaList.length !== 19) {
-        let grid = document.getElementById('wrapper-grid');
+    if (filteredPizzaList.length !== 0) {
+        let grid = document.getElementById('is-grid');
         grid.remove();
         createGrid(filteredPizzaList);
-        let filteredGrid = document.getElementById('wrapper-grid');
-        filteredGrid.classList.remove('hidden');
 
-        let filterWrapper = document.getElementById('filter-wrapper');
-        let showFiltered = document.createElement('div');
-        showFiltered.className = 'filter-wrapper__filtered';
-        showFiltered.innerText = `Пиццы отфильтрованы по ингредиенту: ${textInputValue}`;
-        filterWrapper.append(showFiltered);
+        let hasCancelBtn = document.getElementById('cancel-filter-by-ingredient');
+        let showFiltered = document.getElementById('show-filtered-by-ingredient');
 
-        let filterTop = document.getElementById('filterTop');
-        let cancelFilter = document.createElement('button');
-        cancelFilter.className = 'cancel-filter';
-        cancelFilter.innerText = 'Отменить фильтрацию';
-        cancelFilter.setAttribute('onclick', 'cancelFilterByIngredient()');
-        filterTop.append(cancelFilter);
+        if (showFiltered) showFiltered.innerText = `Пиццы отфильтрованы по ингредиенту: ${textInputValue}`;
+
+        if (!hasCancelBtn) {
+            let filterWrapper = document.getElementById('grid-filters');
+            showFiltered = document.createElement('div');
+            showFiltered.setAttribute('id', 'show-filtered-by-ingredient');
+            showFiltered.className = 'filter-wrapper__filtered';
+            showFiltered.innerText = `Пиццы отфильтрованы по ингредиенту: ${textInputValue}`;
+            filterWrapper.append(showFiltered);
+
+            let filterTop = document.getElementById('filterTop');
+            let cancelFilter = document.createElement('button');
+            cancelFilter.setAttribute('id', 'cancel-filter-by-ingredient');
+            cancelFilter.className = 'cancel-filter';
+            cancelFilter.innerText = 'Отменить фильтрацию';
+            cancelFilter.setAttribute('onclick', 'cancelFilterByIngredient()');
+            filterTop.append(cancelFilter);
+        }
 
     } else if (filteredPizzaList.length === 0 && textInputValue !== '') {
         alert('Пицца с таким ингредиентом не найдена');
@@ -198,163 +180,195 @@ let filterByIngredient = () => {
 };
 
 let cancelFilterByIngredient = () => {
-    let grid = document.getElementById('wrapper-grid');
+    let grid = document.getElementById('is-grid');
+    let cancelBtn = document.getElementById('cancel-filter-by-ingredient');
+    let showFiltered = document.getElementById('show-filtered-by-ingredient');
+    let textInput = document.getElementById('filterInput');
+
     grid.remove();
+    cancelBtn.remove();
+    showFiltered.remove();
+    textInput.value = '';
     createGrid();
-    let startGrid = document.getElementById('wrapper-grid');
-    startGrid.classList.remove('hidden');
 };
 
+let createCancelListFilterBtn = () => {
+    let cancelBtn = document.createElement('button');
+    cancelBtn.setAttribute('onclick', 'cancelListFilter()');
+    cancelBtn.setAttribute('id', 'cancel-list-filter');
+    cancelBtn.innerText = 'Отменить фильтрацию';
+
+    let listFilters = document.getElementById('list-filters');
+    listFilters.append(cancelBtn);
+};
+
+let cancelListFilter = () => {
+    let grid = document.getElementById('is-list');
+    let cancelBtn = document.getElementById('cancel-list-filter');
+    let textInput = document.getElementById('input-name');
+
+    grid.remove();
+    cancelBtn.remove();
+    textInput.value = '';
+    createList();
+};
+
+let filteredPizzaListByName = [];
+
 let sortByPrice = () => {
-    let filteredList = [];
-    for (let i = 0; i < pizzaList.length; i++) {
-        filteredList.push(pizzaList[i]);
+    if (filteredPizzaListByName.length !== 0) {
+        filteredPizzaListByName.sort((a, b) => {
+            let firstPrice = a.price.split(/\s/);
+            let secondPrice = b.price.split(/\s/);
+
+            if (+firstPrice[0] > +secondPrice[0]) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
+
+        let list = document.getElementById('is-list');
+        list.remove();
+        createList(filteredPizzaListByName);
+    } else {
+        let filteredList = [];
+        for (let i = 0; i < pizzaList.length; i++) {
+            filteredList.push(pizzaList[i]);
+        }
+
+        filteredList.sort((a, b) => {
+            let firstPrice = a.price.split(/\s/);
+            let secondPrice = b.price.split(/\s/);
+
+            if (+firstPrice[0] > +secondPrice[0]) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
+
+        let list = document.getElementById('is-list');
+        list.remove();
+        createList(filteredList);
     }
 
-    filteredList.sort((a, b) => {
-        let firstPrice = a.price.split(/\s/);
-        let secondPrice = b.price.split(/\s/);
-
-        if (+firstPrice[0] > +secondPrice[0]) {
-            return -1;
-        } else {
-            return 1;
-        }
-    });
-
-    let list = document.getElementById('wrapper-list');
-    list.remove();
-    createList(filteredList);
-    let newFilteredList = document.getElementById('wrapper-list');
-    newFilteredList.classList.remove('hidden');
+    let cancelListFilterBtn = document.getElementById('cancel-list-filter');
+    if (!cancelListFilterBtn) createCancelListFilterBtn();
 };
 
 let sortByPriceReverse = () => {
-    let filteredList = [];
-    for (let i = 0; i < pizzaList.length; i++) {
-        filteredList.push(pizzaList[i]);
+    if (filteredPizzaListByName.length !== 0) {
+        filteredPizzaListByName.sort((a, b) => {
+            let firstPrice = a.price.split(/\s/);
+            let secondPrice = b.price.split(/\s/);
+
+            if (+firstPrice[0] > +secondPrice[0]) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+
+        let list = document.getElementById('is-list');
+        list.remove();
+        createList(filteredPizzaListByName);
+    } else {
+        let filteredList = [];
+        for (let i = 0; i < pizzaList.length; i++) {
+            filteredList.push(pizzaList[i]);
+        }
+
+        filteredList.sort((a, b) => {
+            let firstPrice = a.price.split(/\s/);
+            let secondPrice = b.price.split(/\s/);
+
+            if (+firstPrice[0] > +secondPrice[0]) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+
+        let list = document.getElementById('is-list');
+        list.remove();
+        createList(filteredList);
     }
 
-    filteredList.sort((a, b) => {
-        let firstPrice = a.price.split(/\s/);
-        let secondPrice = b.price.split(/\s/);
-
-        if (+firstPrice[0] > +secondPrice[0]) {
-            return 1;
-        } else {
-            return -1;
-        }
-    });
-
-    let list = document.getElementById('wrapper-list');
-    list.remove();
-    createList(filteredList);
-    let newFilteredList = document.getElementById('wrapper-list');
-    newFilteredList.classList.remove('hidden');
+    let cancelListFilterBtn = document.getElementById('cancel-list-filter');
+    if (!cancelListFilterBtn) createCancelListFilterBtn();
 };
 
 let sortByName = () => {
-    let filteredPizzaList = [];
+    filteredPizzaListByName = [];
     let textInput = document.getElementById('input-name');
     let textInputValue = textInput.value;
 
-    if (textInputValue === '') alert('Введите название пиццы для фильтра');
+    if (textInputValue === '') return alert('Введите название пиццы для фильтра');
 
     for (let i = 0; i < pizzaList.length; i++) {
-        if (pizzaList[i].name.includes(textInputValue)) filteredPizzaList.push(pizzaList[i]);
+        if (pizzaList[i].name.includes(textInputValue)) filteredPizzaListByName.push(pizzaList[i]);
     }
 
-    let list = document.getElementById('wrapper-list');
+    if (filteredPizzaListByName.length === 0) return alert('Пицца с таким именем не найдена');
+
+    let list = document.getElementById('is-list');
     list.remove();
-    createList(filteredPizzaList);
-    let newFilteredList = document.getElementById('wrapper-list');
-    newFilteredList.classList.remove('hidden');
+    createList(filteredPizzaListByName);
+
+    let cancelListFilterBtn = document.getElementById('cancel-list-filter');
+    if (!cancelListFilterBtn) createCancelListFilterBtn();
 };
-
-let cancelFilter = () => {
-
-};
-
-createList();
-createGrid();
-
-
-let changeToList = document.createElement('button');
-changeToList.className = 'button-list';
-changeToList.innerText = 'List view';
-
-let changeToGrid = document.createElement('button');
-changeToGrid.className = 'button-list';
-changeToGrid.innerText = 'Grid view';
-
-changeToList.addEventListener('click', () => {
-    let wrapper = document.getElementById('wrapper-grid');
-
-    if (wrapper) {
-        wrapper.remove();
-        createList();
-        let list = document.getElementById('wrapper-list');
-        list.classList.remove('hidden');
-    } else {
-        alert('Already in List view mode');
-    }
-});
-
-changeToGrid.addEventListener('click', () => {
-    let wrapper = document.getElementById('wrapper-list');
-
-    if (wrapper) {
-        wrapper.remove();
-        createGrid();
-        let grid = document.getElementById('wrapper-grid');
-        grid.classList.remove('hidden');
-    } else {
-        alert('Already in Grid view mode');
-    }
-});
 
 let modal = document.createElement('div');
 modal.className = 'modal';
-let modalQuestion = document.createElement('div');
-modalQuestion.className = 'modal__question';
-modalQuestion.innerText = 'В каком режиме отобразить меню?';
-let modalWrapper = document.createElement('div');
-modalWrapper.className = 'modal__wrapper';
-let viewList = document.createElement('button');
-viewList.className = 'modal__button';
-viewList.innerText = 'Режим списка';
-let viewGrid = document.createElement('button');
-viewGrid.className = 'modal__button';
-viewGrid.innerText = 'Режим сетки';
-modalWrapper.append(viewList, viewGrid);
-modal.append(modalQuestion, modalWrapper);
+modal.innerHTML = `
+    <div class="modal__question">В каком режиме просмотра отобразить меню?</div>
+    <div class="modal__wrapper">
+        <button class="modal__button" id="list-mode">Режим списка</button>
+        <button class="modal__button" id="grid-mode">Режим сетки</button>
+    </div>
+`;
 document.body.prepend(modal);
 
-viewList.addEventListener('click', () => {
-    let wrapperGrid = document.getElementById('wrapper-grid');
-    wrapperGrid.classList.remove('hidden');
-    wrapperGrid.remove();
+let firstListMode = document.getElementById('list-mode').addEventListener('click', firstSelectedViewMode);
+let firstGridMode = document.getElementById('grid-mode').addEventListener('click', firstSelectedViewMode);
 
-    modal.classList.add('hidden');
+function firstSelectedViewMode(e) {
+    modal.remove();
+    if (e.target.id === 'list-mode') {
+        createListFilters();
+        createList();
+    }
+    if (e.target.id === 'grid-mode') {
+        createGridFilters();
+        createGrid();
+    }
 
-    let wrapperList = document.getElementById('wrapper-list');
-    wrapperList.classList.remove('hidden');
+    let viewMode = document.createElement('div');
+    viewMode.className = 'view-mode';
+    viewMode.innerHTML = `
+        <div class="view-mode" id="view-mode">
+            <button class="view-mode__button" id="change-to-list" onclick="changeViewMode(this)" >List view</button>
+            <button class="view-mode__button" id="change-to-grid" onclick="changeViewMode(this)">Grid view</button>
+        </div>
+    `;
+    document.body.prepend(viewMode);
+}
 
-    document.body.prepend(changeToList);
-    document.body.prepend(changeToGrid);
-});
+let changeViewMode = elem => {
+    let listMode = document.getElementById('is-list');
+    let gridMode = document.getElementById('is-grid');
 
-viewGrid.addEventListener('click', () => {
-    let wrapperList = document.getElementById('wrapper-list');
-    wrapperList.classList.remove('hidden');
-    wrapperList.remove();
+    if (elem.id === 'change-to-list' && !listMode) {
+        container.innerHTML = '';
+        createListFilters();
+        createList();
+    } else if (elem.id === 'change-to-list' && listMode) alert('Режим просмотра "Список" - уже включен.');
 
-    modal.classList.add('hidden');
-
-    let wrapperGrid = document.getElementById('wrapper-grid');
-    wrapperGrid.classList.remove('hidden');
-
-    document.body.prepend(changeToList);
-    document.body.prepend(changeToGrid);
-});
-
+    if (elem.id === 'change-to-grid' && !gridMode) {
+        container.innerHTML = '';
+        createGridFilters();
+        createGrid();
+    } else if (elem.id === 'change-to-grid' && gridMode) alert('Режим просмотра "Сетка" - уже включен.');
+};
