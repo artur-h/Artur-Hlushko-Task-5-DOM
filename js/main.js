@@ -43,7 +43,7 @@ let createList = (array = pizzaList) => {
     }
 
     pizzaWrapper.append(ul);
-    document.body.append(pizzaWrapper);
+    container.append(pizzaWrapper);
 };
 
 let createListFilters = () => {
@@ -57,35 +57,12 @@ let createListFilters = () => {
             <input type="text" id="input-name">
             <button id="input-name-submit" onclick="sortByName()">Сортировать по имени</button>
         </div>
-        <button id="cancel-filter" onclick="cancelFilter()">Сбросить настройки сортировки</button>
     `;
 
-    document.body.append(filterWrapper);
+    container.append(filterWrapper);
 };
 
 let createGrid = (array = pizzaList) => {
-    let mainWrapper = document.createElement('div');
-    mainWrapper.setAttribute('id', 'wrapper-grid');
-    mainWrapper.className = 'wrapper-grid';
-
-    let filterWrapper = document.createElement('div');
-    filterWrapper.setAttribute('id', 'filter-wrapper');
-    filterWrapper.className = 'filter-wrapper';
-    let inputText = document.createElement('input');
-    inputText.setAttribute('id', 'filterInput');
-    inputText.className = 'filter-wrapper__input';
-    let label = document.createElement('label');
-    label.innerText = 'Фильтровать по одному ингредиенту: ';
-    label.className = 'filter-wrapper__label';
-    label.append(inputText);
-    let filterButton = document.createElement('button');
-    filterButton.setAttribute('onclick', 'filterByIngredient()');
-    filterButton.innerText = 'Фильтровать';
-    let filterTop = document.createElement('div');
-    filterTop.setAttribute('id', 'filterTop');
-    filterTop.className = 'filter-wrapper__top';
-    filterTop.append(label, filterButton);
-    filterWrapper.append(filterTop);
     let pizzaWrapper = document.createElement('div');
     pizzaWrapper.setAttribute('id', 'is-grid');
     pizzaWrapper.className = 'pizza-wrapper';
@@ -109,7 +86,6 @@ let createGrid = (array = pizzaList) => {
         let tdList = [array[i].ingredients, array[i].calories];
 
         for (let j = 0; j < 2; j++) {
-
             let tr = document.createElement('tr');
             let th = document.createElement('th');
             th.innerText = thList[j];
@@ -136,8 +112,24 @@ let createGrid = (array = pizzaList) => {
         pizzaWrapper.append(pizza);
     }
 
-    mainWrapper.append(filterWrapper, pizzaWrapper);
-    container.append(mainWrapper);
+    container.append(pizzaWrapper);
+};
+
+let createGridFilters = () => {
+    let filterWrapper = document.createElement('div');
+    filterWrapper.setAttribute('id', 'grid-filters');
+    filterWrapper.className = 'grid-filters';
+    filterWrapper.innerHTML = `
+        <div class="grid-filters__top" id="filterTop">
+            <label class="grid-filters__label">
+                Фильтровать по одному ингредиенту: 
+                <input type="text" id="filterInput" class="grid-filters__input">
+            </label>
+            <button onclick="filterByIngredient()">Фильтровать</button>
+        </div>
+    `;
+
+    container.append(filterWrapper);
 };
 
 let filterByIngredient = () => {
@@ -155,23 +147,32 @@ let filterByIngredient = () => {
         }
     }
 
-    if (filteredPizzaList.length !== 0 && filteredPizzaList.length !== 19) {
-        let grid = document.getElementById('wrapper-grid');
+    if (filteredPizzaList.length !== 0) {
+        let grid = document.getElementById('is-grid');
         grid.remove();
         createGrid(filteredPizzaList);
 
-        let filterWrapper = document.getElementById('filter-wrapper');
-        let showFiltered = document.createElement('div');
-        showFiltered.className = 'filter-wrapper__filtered';
-        showFiltered.innerText = `Пиццы отфильтрованы по ингредиенту: ${textInputValue}`;
-        filterWrapper.append(showFiltered);
+        let hasCancelBtn = document.getElementById('cancel-filter-by-ingredient');
+        let showFiltered = document.getElementById('show-filtered-by-ingredient');
 
-        let filterTop = document.getElementById('filterTop');
-        let cancelFilter = document.createElement('button');
-        cancelFilter.className = 'cancel-filter';
-        cancelFilter.innerText = 'Отменить фильтрацию';
-        cancelFilter.setAttribute('onclick', 'cancelFilterByIngredient()');
-        filterTop.append(cancelFilter);
+        if (showFiltered) showFiltered.innerText = `Пиццы отфильтрованы по ингредиенту: ${textInputValue}`;
+
+        if (!hasCancelBtn) {
+            let filterWrapper = document.getElementById('grid-filters');
+            showFiltered = document.createElement('div');
+            showFiltered.setAttribute('id', 'show-filtered-by-ingredient');
+            showFiltered.className = 'filter-wrapper__filtered';
+            showFiltered.innerText = `Пиццы отфильтрованы по ингредиенту: ${textInputValue}`;
+            filterWrapper.append(showFiltered);
+
+            let filterTop = document.getElementById('filterTop');
+            let cancelFilter = document.createElement('button');
+            cancelFilter.setAttribute('id', 'cancel-filter-by-ingredient');
+            cancelFilter.className = 'cancel-filter';
+            cancelFilter.innerText = 'Отменить фильтрацию';
+            cancelFilter.setAttribute('onclick', 'cancelFilterByIngredient()');
+            filterTop.append(cancelFilter);
+        }
 
     } else if (filteredPizzaList.length === 0 && textInputValue !== '') {
         alert('Пицца с таким ингредиентом не найдена');
@@ -179,71 +180,144 @@ let filterByIngredient = () => {
 };
 
 let cancelFilterByIngredient = () => {
-    let grid = document.getElementById('wrapper-grid');
+    let grid = document.getElementById('is-grid');
+    let cancelBtn = document.getElementById('cancel-filter-by-ingredient');
+    let showFiltered = document.getElementById('show-filtered-by-ingredient');
+    let textInput = document.getElementById('filterInput');
+
     grid.remove();
+    cancelBtn.remove();
+    showFiltered.remove();
+    textInput.value = '';
     createGrid();
 };
 
+let createCancelListFilterBtn = () => {
+    let cancelBtn = document.createElement('button');
+    cancelBtn.setAttribute('onclick', 'cancelListFilter()');
+    cancelBtn.setAttribute('id', 'cancel-list-filter');
+    cancelBtn.innerText = 'Отменить фильтрацию';
+
+    let listFilters = document.getElementById('list-filters');
+    listFilters.append(cancelBtn);
+};
+
+let cancelListFilter = () => {
+    let grid = document.getElementById('is-list');
+    let cancelBtn = document.getElementById('cancel-list-filter');
+    let textInput = document.getElementById('input-name');
+
+    grid.remove();
+    cancelBtn.remove();
+    textInput.value = '';
+    createList();
+};
+
+let filteredPizzaListByName = [];
+
 let sortByPrice = () => {
-    let filteredList = [];
-    for (let i = 0; i < pizzaList.length; i++) {
-        filteredList.push(pizzaList[i]);
+    if (filteredPizzaListByName.length !== 0) {
+        filteredPizzaListByName.sort((a, b) => {
+            let firstPrice = a.price.split(/\s/);
+            let secondPrice = b.price.split(/\s/);
+
+            if (+firstPrice[0] > +secondPrice[0]) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
+
+        let list = document.getElementById('is-list');
+        list.remove();
+        createList(filteredPizzaListByName);
+    } else {
+        let filteredList = [];
+        for (let i = 0; i < pizzaList.length; i++) {
+            filteredList.push(pizzaList[i]);
+        }
+
+        filteredList.sort((a, b) => {
+            let firstPrice = a.price.split(/\s/);
+            let secondPrice = b.price.split(/\s/);
+
+            if (+firstPrice[0] > +secondPrice[0]) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
+
+        let list = document.getElementById('is-list');
+        list.remove();
+        createList(filteredList);
     }
 
-    filteredList.sort((a, b) => {
-        let firstPrice = a.price.split(/\s/);
-        let secondPrice = b.price.split(/\s/);
-
-        if (+firstPrice[0] > +secondPrice[0]) {
-            return -1;
-        } else {
-            return 1;
-        }
-    });
-
-    let list = document.getElementById('wrapper-list');
-    list.remove();
-    createList(filteredList);
+    let cancelListFilterBtn = document.getElementById('cancel-list-filter');
+    if (!cancelListFilterBtn) createCancelListFilterBtn();
 };
 
 let sortByPriceReverse = () => {
-    let filteredList = [];
-    for (let i = 0; i < pizzaList.length; i++) {
-        filteredList.push(pizzaList[i]);
+    if (filteredPizzaListByName.length !== 0) {
+        filteredPizzaListByName.sort((a, b) => {
+            let firstPrice = a.price.split(/\s/);
+            let secondPrice = b.price.split(/\s/);
+
+            if (+firstPrice[0] > +secondPrice[0]) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+
+        let list = document.getElementById('is-list');
+        list.remove();
+        createList(filteredPizzaListByName);
+    } else {
+        let filteredList = [];
+        for (let i = 0; i < pizzaList.length; i++) {
+            filteredList.push(pizzaList[i]);
+        }
+
+        filteredList.sort((a, b) => {
+            let firstPrice = a.price.split(/\s/);
+            let secondPrice = b.price.split(/\s/);
+
+            if (+firstPrice[0] > +secondPrice[0]) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+
+        let list = document.getElementById('is-list');
+        list.remove();
+        createList(filteredList);
     }
 
-    filteredList.sort((a, b) => {
-        let firstPrice = a.price.split(/\s/);
-        let secondPrice = b.price.split(/\s/);
-
-        if (+firstPrice[0] > +secondPrice[0]) {
-            return 1;
-        } else {
-            return -1;
-        }
-    });
-
-    let list = document.getElementById('wrapper-list');
-    list.remove();
-    createList(filteredList);
+    let cancelListFilterBtn = document.getElementById('cancel-list-filter');
+    if (!cancelListFilterBtn) createCancelListFilterBtn();
 };
 
 let sortByName = () => {
-    let filteredPizzaList = [];
+    filteredPizzaListByName = [];
     let textInput = document.getElementById('input-name');
     let textInputValue = textInput.value;
 
     if (textInputValue === '') return alert('Введите название пиццы для фильтра');
 
     for (let i = 0; i < pizzaList.length; i++) {
-        if (pizzaList[i].name.includes(textInputValue)) filteredPizzaList.push(pizzaList[i]);
+        if (pizzaList[i].name.includes(textInputValue)) filteredPizzaListByName.push(pizzaList[i]);
     }
 
-    if (filteredPizzaList.length === 0) return alert('Пицца с таким именем не найдена');
+    if (filteredPizzaListByName.length === 0) return alert('Пицца с таким именем не найдена');
 
-    let list = document.getElementById('wrapper-list');
+    let list = document.getElementById('is-list');
     list.remove();
-    createList(filteredPizzaList);
+    createList(filteredPizzaListByName);
+
+    let cancelListFilterBtn = document.getElementById('cancel-list-filter');
+    if (!cancelListFilterBtn) createCancelListFilterBtn();
 };
 
 let modal = document.createElement('div');
@@ -266,7 +340,10 @@ function firstSelectedViewMode(e) {
         createListFilters();
         createList();
     }
-    if (e.target.id === 'grid-mode') createGrid();
+    if (e.target.id === 'grid-mode') {
+        createGridFilters();
+        createGrid();
+    }
 
     let viewMode = document.createElement('div');
     viewMode.className = 'view-mode';
@@ -284,16 +361,14 @@ let changeViewMode = elem => {
     let gridMode = document.getElementById('is-grid');
 
     if (elem.id === 'change-to-list' && !listMode) {
-        gridMode.remove();
+        container.innerHTML = '';
+        createListFilters();
         createList();
-    } else if (elem.id === 'change-to-list' && listMode) {
-        alert('Режим просмотра "Список" - уже включен.');
-    }
+    } else if (elem.id === 'change-to-list' && listMode) alert('Режим просмотра "Список" - уже включен.');
 
     if (elem.id === 'change-to-grid' && !gridMode) {
-        listMode.remove();
+        container.innerHTML = '';
+        createGridFilters();
         createGrid();
-    } else if (elem.id === 'change-to-grid' && gridMode) {
-        alert('Режим просмотра "Сетка" - уже включен.');
-    }
+    } else if (elem.id === 'change-to-grid' && gridMode) alert('Режим просмотра "Сетка" - уже включен.');
 };

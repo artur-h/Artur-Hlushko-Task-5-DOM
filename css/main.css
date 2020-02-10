@@ -21,6 +21,11 @@ body {
     margin: 20px 0;
 }
 
+.grid-filters {
+    margin: 20px 0;
+    text-align: center;
+}
+
 .view-mode {
     text-align: center;
 }
