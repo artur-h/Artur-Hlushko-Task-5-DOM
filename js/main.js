@@ -54,10 +54,10 @@ let createListFilters = () => {
     <label>Сортировать по:
       <select id="selectFilter" onchange="filterList(this)">
         <option id="emptyOption" value="empty" style="display: none"></option>
-        <option value="sortByPrice">цене сверху вниз</option>
-        <option value="sortByPriceReverse">цене снизу вверх</option>
-        <option value="sortByAlphabet">алфавиту</option>
-        <option value="sortByAlphabetReverse">алфавиту в обратном порядке</option>
+        <option value="sortByPrice">цене по убыванию</option>
+        <option value="sortByPriceReverse">цене по возрастанию</option>
+        <option value="sortByAlphabet">названию</option>
+        <option value="sortByAlphabetReverse">названию в обратном порядке</option>
       </select>
     </label>
   `;
@@ -66,8 +66,34 @@ let createListFilters = () => {
 };
 
 function filterList(e) {
-  if (e.value === 'sortByPrice') sortByPrice();
-  if (e.value === 'sortByPriceReverse') sortByPriceReverse();
+  let pizzaNameArray = [];
+
+  for (let i = 0; i < pizzaList.length; i++) {
+    pizzaNameArray.push(pizzaList[i]);
+  }
+
+  if (e.value === 'sortByPrice' || e.value === 'sortByPriceReverse') return sortByPrice();
+  if (e.value === 'sortByAlphabet') pizzaNameArray.sort((a, b) => {
+    if (a.name > b.name) {
+      return 1;
+    } else {
+      return -1;
+    }
+  });
+  if (e.value === 'sortByAlphabetReverse') pizzaNameArray.sort((a, b) => {
+    if (a.name > b.name) {
+      return -1;
+    } else {
+      return 1;
+    }
+  });
+
+  let list = document.getElementById('is-list');
+  list.remove();
+  createList(pizzaNameArray);
+
+  let cancelListFilterBtn = document.getElementById('cancel-list-filter');
+  if (!cancelListFilterBtn) createCancelListFilterBtn();
 }
 
 let createGrid = (array = pizzaList) => {
@@ -211,12 +237,12 @@ let createCancelListFilterBtn = () => {
 };
 
 let cancelListFilter = () => {
-  let grid = document.getElementById('is-list');
+  let list = document.getElementById('is-list');
   let cancelBtn = document.getElementById('cancel-list-filter');
   let selectFilter = document.getElementById('selectFilter');
   let emptyOption = document.getElementById('emptyOption');
 
-  grid.remove();
+  list.remove();
   cancelBtn.remove();
   selectFilter.value = emptyOption.value;
   createList();
@@ -224,29 +250,14 @@ let cancelListFilter = () => {
 
 let sortByPrice = () => {
   let filteredList = [];
+  let priceFilter = document.getElementById('selectFilter');
 
   for (let i = 0; i < pizzaList.length; i++) {
     filteredList.push(pizzaList[i]);
   }
 
-  filteredList.sort((a, b) => parseInt(b.price) - parseInt(a.price));
-
-  let list = document.getElementById('is-list');
-  list.remove();
-  createList(filteredList);
-
-  let cancelListFilterBtn = document.getElementById('cancel-list-filter');
-  if (!cancelListFilterBtn) createCancelListFilterBtn();
-};
-
-let sortByPriceReverse = () => {
-  let filteredList = [];
-
-  for (let i = 0; i < pizzaList.length; i++) {
-    filteredList.push(pizzaList[i]);
-  }
-
-  filteredList.sort((a, b) => parseInt(a.price) - parseInt(b.price));
+  if (priceFilter.value === 'sortByPrice') filteredList.sort((a, b) => parseInt(b.price) - parseInt(a.price));
+  if (priceFilter.value === 'sortByPriceReverse') filteredList.sort((a, b) => parseInt(a.price) - parseInt(b.price));
 
   let list = document.getElementById('is-list');
   list.remove();
@@ -285,8 +296,8 @@ function firstSelectedViewMode(e) {
   viewMode.className = 'view-mode';
   viewMode.innerHTML = `
         <div class="view-mode" id="view-mode">
-            <button class="view-mode__button" id="change-to-list" onclick="changeViewMode(this)" >List view</button>
-            <button class="view-mode__button" id="change-to-grid" onclick="changeViewMode(this)">Grid view</button>
+            <button class="view-mode__button" id="change-to-list" onclick="changeViewMode(this)" >Режим списка</button>
+            <button class="view-mode__button" id="change-to-grid" onclick="changeViewMode(this)">Режим сетки</button>
         </div>
     `;
   document.body.prepend(viewMode);
