@@ -10,20 +10,36 @@ class Pizza {
 }
 
 let pizzaList = [];
-for (let key in menu) {
-  let findProperty = propertyName => {
-    for (let keyInner in menu[key]) {
-      if (keyInner === propertyName) return menu[key][keyInner];
-    }
-  };
 
-  pizzaList.push(new Pizza(
-    key,
-    findProperty('ingredients'),
-    findProperty('calories'),
-    findProperty('price'),
-  ));
-}
+let xhr = new XMLHttpRequest;
+
+xhr.open('GET', 'json/menu.json');
+
+xhr.responseType = 'json';
+
+xhr.onload = () => {
+  if (xhr.status !== 200) {
+    console.log(`${xhr.status}: ${xhr.statusText}`);
+  } else {
+    let menu = xhr.response;
+    for (let key in menu) {
+      let findProperty = propertyName => {
+        for (let keyInner in menu[key]) {
+          if (keyInner === propertyName) return menu[key][keyInner];
+        }
+      };
+
+      pizzaList.push(new Pizza(
+          key,
+          findProperty('ingredients'),
+          findProperty('calories'),
+          findProperty('price'),
+      ));
+    }
+  }
+};
+
+xhr.send();
 
 let container = document.createElement('div');
 container.className = 'container';
