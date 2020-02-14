@@ -115,3 +115,18 @@ li:not(:last-child) {
 .hidden {
     display: none;
 }
+
+.pizza__ingredient {
+    display: inline-block;
+    margin: 2px 2px;
+    padding: 1px 4px;
+    border-radius: 5px;
+    background-color: #eee;
+    transition: .3s all ease;
+}
+
+.pizza__ingredient:hover {
+    text-decoration: line-through;
+    background-color: #ccc;
+    cursor: pointer;
+}

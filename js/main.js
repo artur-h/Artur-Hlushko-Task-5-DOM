@@ -144,7 +144,11 @@ let createGrid = (array = pizzaList) => {
 
       if (thList[j] === 'Ингредиенты:') {
         for (let k = 0; k < tdList[j].length; k++) {
-          k === tdList[j].length - 1 ? td.innerText += tdList[j][k] : td.innerText += `${tdList[j][k]}, `;
+          let span = document.createElement('span');
+          span.className = 'pizza__ingredient';
+          span.innerText = `${tdList[j][k]} `;
+
+          td.append(span);
         }
       } else {
         td.innerText = tdList[j];
