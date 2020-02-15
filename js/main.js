@@ -1,5 +1,13 @@
 'use strict';
 
+class Ingredient {
+  constructor(name, calories, price) {
+    this.name = name;
+    this.calories = calories;
+    this.price = price;
+  }
+}
+
 class Pizza {
   constructor(name, ingredients, calories, price) {
     this.name = name;
@@ -9,36 +17,63 @@ class Pizza {
   }
 }
 
+let ingredientsList = [];
+
+let ingredientsXhr = new XMLHttpRequest();
+ingredientsXhr.open('GET', 'json/ingredients.json');
+ingredientsXhr.responseType = 'json';
+ingredientsXhr.onload = () => {
+  let data = ingredientsXhr.response;
+  for (let key in data) {
+    let findProperty = propertyName => {
+      for (let keyInner in data[key]) {
+        if (keyInner === propertyName) return data[key][keyInner];
+      }
+    };
+
+    ingredientsList.push(new Ingredient(
+        key,
+        findProperty('calories'),
+        findProperty('price'),
+    ));
+  }
+};
+ingredientsXhr.send();
+
 let pizzaList = [];
 
 let xhr = new XMLHttpRequest;
-
 xhr.open('GET', 'json/menu.json');
-
 xhr.responseType = 'json';
-
 xhr.onload = () => {
   if (xhr.status !== 200) {
     console.log(`${xhr.status}: ${xhr.statusText}`);
   } else {
     let menu = xhr.response;
-    for (let key in menu) {
-      let findProperty = propertyName => {
-        for (let keyInner in menu[key]) {
-          if (keyInner === propertyName) return menu[key][keyInner];
+    for (let item in menu) {
+      let pizzaIngredients = menu[item].ingredients;
+      let caloriesSum = 0;
+      let priceSum = 0;
+
+      for (let i = 0; i < pizzaIngredients.length; i++) {
+        for (let j = 0; j < ingredientsList.length; j++) {
+          if (pizzaIngredients[i] == ingredientsList[j].name) {
+            pizzaIngredients[i] = ingredientsList[j];
+            caloriesSum += ingredientsList[j].calories;
+            priceSum += ingredientsList[j].price;
+          }
         }
-      };
+      }
 
       pizzaList.push(new Pizza(
-          key,
-          findProperty('ingredients'),
-          findProperty('calories'),
-          findProperty('price'),
+          item,
+          menu[item].ingredients,
+          caloriesSum,
+          priceSum
       ));
     }
   }
 };
-
 xhr.send();
 
 let container = document.createElement('div');
@@ -54,7 +89,7 @@ let createList = (array = pizzaList) => {
 
   for (let i = 0; i < array.length; i++) {
     let li = document.createElement('li');
-    li.innerText = `${array[i].name} - ${array[i].price}`;
+    li.innerText = `${array[i].name} - ${array[i].price} грн`;
     ul.append(li);
   }
 
@@ -146,7 +181,7 @@ let createGrid = (array = pizzaList) => {
         for (let k = 0; k < tdList[j].length; k++) {
           let span = document.createElement('span');
           span.className = 'pizza__ingredient';
-          span.innerText = `${tdList[j][k]} `;
+          span.innerText = `${tdList[j][k].name} `;
 
           td.append(span);
         }
@@ -160,7 +195,7 @@ let createGrid = (array = pizzaList) => {
 
     let pizzaPrice = document.createElement('div');
     pizzaPrice.className = 'pizza__price';
-    pizzaPrice.innerText = array[i].price;
+    pizzaPrice.innerText = `${array[i].price} грн`;
 
     pizza.append(pizzaImg, pizzaName, pizzaInfo, pizzaPrice);
     pizzaWrapper.append(pizza);
@@ -195,7 +230,7 @@ let filterByIngredient = () => {
 
   for (let i = 0; i < pizzaList.length; i++) {
     for (let j = 0; j < pizzaList[i].ingredients.length; j++) {
-      if (pizzaList[i].ingredients[j] === textInputValue) {
+      if (pizzaList[i].ingredients[j].name === textInputValue) {
         filteredPizzaList.push(pizzaList[i]);
       }
     }
