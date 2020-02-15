@@ -5,6 +5,7 @@ class Ingredient {
     this.name = name;
     this.calories = calories;
     this.price = price;
+    this.crosedOut = false;
   }
 }
 
@@ -156,6 +157,7 @@ let createGrid = (array = pizzaList) => {
 
     let pizza = document.createElement('div');
     pizza.className = 'pizza';
+    pizza.setAttribute('id', 'pizza');
 
     let pizzaImg = document.createElement('div');
     pizzaImg.className = 'pizza__img';
@@ -180,6 +182,7 @@ let createGrid = (array = pizzaList) => {
       if (thList[j] === 'Ингредиенты:') {
         for (let k = 0; k < tdList[j].length; k++) {
           let span = document.createElement('span');
+          span.setAttribute('id', 'pizza-ingredient');
           span.className = 'pizza__ingredient';
           span.innerText = `${tdList[j][k].name} `;
 
@@ -199,6 +202,55 @@ let createGrid = (array = pizzaList) => {
 
     pizza.append(pizzaImg, pizzaName, pizzaInfo, pizzaPrice);
     pizzaWrapper.append(pizza);
+
+    pizza.addEventListener('click', e => {
+      let ingredient = e.target;
+      let wrapper = e.currentTarget;
+      let childrenList = wrapper.children;
+      let pizzaName;
+      let pizzaPrice;
+
+      for (let i = 0; i < childrenList.length; i++) {
+        if (childrenList[i].className === 'pizza__name') pizzaName = childrenList[i];
+      }
+
+      for (let i = 0; i < childrenList.length; i++) {
+        if (childrenList[i].className === 'pizza__price') pizzaPrice = childrenList[i];
+      }
+
+      if (ingredient.id === 'pizza-ingredient') {
+        for (let i = 0; i < pizzaList.length; i++) {
+          let listOfIngredients = pizzaList[i].ingredients;
+          for (let j = 0; j < listOfIngredients.length; j++) {
+            if (ingredient.innerText === listOfIngredients[j].name && pizzaList[i].name === pizzaName.textContent) {
+
+              let hasClass = classCheck => {
+                for (let className of ingredient.classList) {
+                  if (className === classCheck) {
+                    return true;
+                  }
+                }
+                return false;
+              };
+
+              if (hasClass('pizza__ingredient--crossedOut')) {
+                ingredient.classList.remove('pizza__ingredient--crossedOut');
+                listOfIngredients[j].crosedOut = false;
+              } else {
+                listOfIngredients[j].crosedOut = true;
+                ingredient.classList.add('pizza__ingredient--crossedOut');
+              }
+
+              let acc = 0;
+              for (let k = 0; k < listOfIngredients.length; k++) {
+                if (listOfIngredients[k].crosedOut === false) acc += listOfIngredients[k].price;
+              }
+              pizzaPrice.innerText = acc + ' грн';
+            }
+          }
+        }
+      }
+    });
   }
 
   container.append(pizzaWrapper);
