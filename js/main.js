@@ -188,8 +188,11 @@ let createGrid = (array = pizzaList) => {
 
           td.append(span);
         }
-      } else {
-        td.innerText = tdList[j];
+      } else if (thList[j] === 'Калории:') {
+        let span = document.createElement('span');
+        span.className = 'pizza__calories';
+        span.innerText = tdList[j];
+        td.append(span);
       }
 
       tr.append(th, td);
@@ -205,18 +208,32 @@ let createGrid = (array = pizzaList) => {
 
     pizza.addEventListener('click', e => {
       let ingredient = e.target;
-      let wrapper = e.currentTarget;
-      let childrenList = wrapper.children;
+      let currentWrapper = e.currentTarget;
+      let currentChildrenList = currentWrapper.children;
       let pizzaName;
       let pizzaPrice;
+      let pizzaCalories;
 
-      for (let i = 0; i < childrenList.length; i++) {
-        if (childrenList[i].className === 'pizza__name') pizzaName = childrenList[i];
+      for (let i = 0; i < currentChildrenList.length; i++) {
+        if (currentChildrenList[i].className === 'pizza__name') pizzaName = currentChildrenList[i];
+        if (currentChildrenList[i].className === 'pizza__price') pizzaPrice = currentChildrenList[i];
       }
 
-      for (let i = 0; i < childrenList.length; i++) {
-        if (childrenList[i].className === 'pizza__price') pizzaPrice = childrenList[i];
+      let allCaloriesElements = document.querySelectorAll('.pizza__calories');
+      for (let i = 0; i < allCaloriesElements.length; i++) {
+        let wrapper = allCaloriesElements[i].closest('.pizza');
+        let childrenList = wrapper.children;
+        let name;
+
+        for (let j = 0; j < childrenList.length; j++) {
+          if (childrenList[j].className === 'pizza__name') {
+            name = childrenList[j].innerHTML;
+            if (name === pizzaName.innerHTML) pizzaCalories = allCaloriesElements[i];
+          }
+        }
       }
+
+      console.log(pizzaCalories);
 
       if (ingredient.id === 'pizza-ingredient') {
         for (let i = 0; i < pizzaList.length; i++) {
@@ -241,11 +258,14 @@ let createGrid = (array = pizzaList) => {
                 ingredient.classList.add('pizza__ingredient--crossedOut');
               }
 
-              let acc = 0;
+              let accPrice = 0;
+              let accCalories = 0;
               for (let k = 0; k < listOfIngredients.length; k++) {
-                if (listOfIngredients[k].crosedOut === false) acc += listOfIngredients[k].price;
+                if (listOfIngredients[k].crosedOut === false) accPrice += listOfIngredients[k].price;
+                if (listOfIngredients[k].crosedOut === false) accCalories += listOfIngredients[k].calories;
               }
-              pizzaPrice.innerText = acc + ' грн';
+              pizzaPrice.innerText = accPrice + ' грн';
+              pizzaCalories.innerText = accCalories;
             }
           }
         }
