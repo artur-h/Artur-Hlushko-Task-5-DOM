@@ -180,9 +180,14 @@ let createGrid = (array = pizzaList) => {
       let td = document.createElement('td');
 
       if (thList[j] === 'Ингредиенты:') {
+        let addBtn = document.createElement('button');
+        addBtn.className = 'pizza__add-btn';
+        addBtn.innerText = 'добавить';
+        th.append(addBtn);
+
+        td.className = 'pizza__ingredient-list';
         for (let k = 0; k < tdList[j].length; k++) {
           let span = document.createElement('span');
-          span.setAttribute('id', 'pizza-ingredient');
           span.className = 'pizza__ingredient';
           span.innerText = `${tdList[j][k].name} `;
 
@@ -207,42 +212,188 @@ let createGrid = (array = pizzaList) => {
     pizzaWrapper.append(pizza);
 
     pizza.addEventListener('click', e => {
-      let ingredient = e.target;
+      let clickTarget = e.target;
       let currentWrapper = e.currentTarget;
       let currentChildrenList = currentWrapper.children;
       let pizzaName;
       let pizzaPrice;
       let pizzaCalories;
+      let pizzaIngredients;
 
       for (let i = 0; i < currentChildrenList.length; i++) {
         if (currentChildrenList[i].className === 'pizza__name') pizzaName = currentChildrenList[i];
         if (currentChildrenList[i].className === 'pizza__price') pizzaPrice = currentChildrenList[i];
       }
 
-      let allCaloriesElements = document.querySelectorAll('.pizza__calories');
-      for (let i = 0; i < allCaloriesElements.length; i++) {
-        let wrapper = allCaloriesElements[i].closest('.pizza');
-        let childrenList = wrapper.children;
-        let name;
+      let findElement = classSelector => {
+        let collection = document.querySelectorAll(classSelector);
+        for (let i = 0; i < collection.length; i++) {
+          let wrapper = collection[i].closest('.pizza');
+          let childrenList = wrapper.children;
+          let name;
 
-        for (let j = 0; j < childrenList.length; j++) {
-          if (childrenList[j].className === 'pizza__name') {
-            name = childrenList[j].innerHTML;
-            if (name === pizzaName.innerHTML) pizzaCalories = allCaloriesElements[i];
+          for (let j = 0; j < childrenList.length; j++) {
+            if (childrenList[j].className === 'pizza__name') {
+              name = childrenList[j].innerHTML;
+              if (name === pizzaName.innerHTML && classSelector === '.pizza__calories') pizzaCalories = collection[i];
+              if (name === pizzaName.innerHTML && classSelector === '.pizza__ingredient-list') pizzaIngredients = collection[i];
+            }
           }
         }
+      };
+
+      if (clickTarget.innerText === 'добавить') {
+        findElement('.pizza__calories');
+
+        let selectIngredientOuter = document.createElement('div');
+        selectIngredientOuter.className = 'select-ingredient-window__outer';
+        selectIngredientOuter.addEventListener('click', e => {
+          if (e.target !== selectIngredient) {
+            selectIngredientOuter.remove();
+            selectIngredient.remove();
+          }
+        });
+
+        let selectIngredient = document.createElement('div');
+        selectIngredient.className = 'select-ingredient-window';
+
+        let selectIngredientList = document.createElement('div');
+        selectIngredientList.className = 'select-ingredient-window__list';
+
+        let selectIngredientButtons = document.createElement('div');
+        selectIngredientButtons.className = 'select-ingredient-window__buttons';
+        let doneBtn = document.createElement('button');
+        doneBtn.innerText = 'Подтвердить';
+        let cancelBtn = document.createElement('button');
+        cancelBtn.innerText = 'Отмена';
+        selectIngredientButtons.append(doneBtn, cancelBtn);
+
+        findElement('.pizza__ingredient-list');
+
+        let allIngredients = [];
+        for (let i = 0; i < ingredientsList.length; i++) {
+          allIngredients.push(ingredientsList[i].name);
+        }
+
+        let currentIngredients = [];
+        for (let i = 0; i < pizzaIngredients.children.length; i++) {
+          let ingredientName = pizzaIngredients.children[i].innerText.trim();
+          currentIngredients.push(ingredientName);
+
+        }
+
+        let showIngredients = [];
+        nextIteration: for (let i = 0; i < allIngredients.length; i++) {
+          for (let j = 0; j < currentIngredients.length; j++) {
+            if (allIngredients[i] === currentIngredients[j]) {
+              continue nextIteration;
+            }
+          }
+          showIngredients.push(allIngredients[i])
+        }
+
+        for (let i = 0; i < showIngredients.length; i++) {
+          let span = document.createElement('span');
+          span.className = 'select-ingredient-window__ingredient';
+          span.append(showIngredients[i]);
+          selectIngredientList.append(span);
+        }
+
+        selectIngredient.append(selectIngredientList, selectIngredientButtons);
+
+        document.body.prepend(selectIngredientOuter, selectIngredient);
+
+        selectIngredient.addEventListener('click', e => {
+          let clickModal = e.target;
+
+          if (clickModal.className === 'select-ingredient-window__ingredient') {
+            clickModal.classList.add('select-ingredient-window__ingredient--checked');
+          } else if (clickModal.className === 'select-ingredient-window__ingredient select-ingredient-window__ingredient--checked') {
+            clickModal.classList.remove('select-ingredient-window__ingredient--checked');
+          }
+
+          let selected = [];
+
+          if (clickModal.innerText === 'Подтвердить') {
+            for (let i = 0; i < selectIngredientList.children.length; i++) {
+              if (selectIngredientList.children[i].className === 'select-ingredient-window__ingredient select-ingredient-window__ingredient--checked') {
+                selected.push(selectIngredientList.children[i]);
+
+                selectIngredientList.children[i].className = 'pizza__ingredient';
+                pizzaIngredients.append(selectIngredientList.children[i]);
+                i = -1;
+              }
+            }
+
+            let ingredientsToAdd = [];
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', 'json/ingredients.json');
+            xhr.responseType = 'json';
+            xhr.onload = () => {
+              let data = xhr.response;
+              for (let key in data) {
+                let findProperty = propertyName => {
+                  for (let keyInner in data[key]) {
+                    if (keyInner === propertyName) return data[key][keyInner];
+                  }
+                };
+
+                for (let i = 0; i < selected.length; i++) {
+                  if (selected[i].innerText === key) {
+                    ingredientsToAdd.push(new Ingredient(
+                      key,
+                      findProperty('calories'),
+                      findProperty('price'),
+                    ));
+                  }
+                }
+              }
+
+              for (let i = 0; i < pizzaList.length; i++) {
+                if (pizzaName.textContent === pizzaList[i].name) {
+                  for (let j = 0; j < ingredientsToAdd.length; j++) {
+                    pizzaList[i].ingredients.push(ingredientsToAdd[j]);
+                  }
+                }
+              }
+
+              for (let i = 0; i < pizzaList.length; i++) {
+                if (pizzaName.textContent === pizzaList[i].name) {
+                  let accPrice = 0;
+                  let accCalories = 0;
+
+                  for (let j = 0; j < pizzaList[i].ingredients.length; j++) {
+                    if (pizzaList[i].ingredients[j].crosedOut === false) accPrice += pizzaList[i].ingredients[j].price;
+                    if (pizzaList[i].ingredients[j].crosedOut === false) accCalories += pizzaList[i].ingredients[j].calories;
+                  }
+
+                  pizzaPrice.innerText = accPrice + ' грн';
+                  pizzaCalories.innerText = accCalories;
+                }
+              }
+            };
+            xhr.send();
+
+            selectIngredientOuter.remove();
+            selectIngredient.remove();
+          } else if (clickModal.innerText === 'Отмена') {
+            selectIngredientOuter.remove();
+            selectIngredient.remove();
+          }
+        });
       }
 
-      console.log(pizzaCalories);
+      if (clickTarget.className === 'pizza__ingredient' || clickTarget.className === 'pizza__ingredient pizza__ingredient--crossedOut') {
+        findElement('.pizza__calories');
 
-      if (ingredient.id === 'pizza-ingredient') {
         for (let i = 0; i < pizzaList.length; i++) {
           let listOfIngredients = pizzaList[i].ingredients;
           for (let j = 0; j < listOfIngredients.length; j++) {
-            if (ingredient.innerText === listOfIngredients[j].name && pizzaList[i].name === pizzaName.textContent) {
+            if (clickTarget.innerText === listOfIngredients[j].name && pizzaList[i].name === pizzaName.textContent) {
 
               let hasClass = classCheck => {
-                for (let className of ingredient.classList) {
+                for (let className of clickTarget.classList) {
                   if (className === classCheck) {
                     return true;
                   }
@@ -251,11 +402,11 @@ let createGrid = (array = pizzaList) => {
               };
 
               if (hasClass('pizza__ingredient--crossedOut')) {
-                ingredient.classList.remove('pizza__ingredient--crossedOut');
+                clickTarget.classList.remove('pizza__ingredient--crossedOut');
                 listOfIngredients[j].crosedOut = false;
               } else {
                 listOfIngredients[j].crosedOut = true;
-                ingredient.classList.add('pizza__ingredient--crossedOut');
+                clickTarget.classList.add('pizza__ingredient--crossedOut');
               }
 
               let accPrice = 0;
