@@ -159,6 +159,9 @@ let createGrid = (array = pizzaList) => {
     pizza.className = 'pizza';
     pizza.setAttribute('id', 'pizza');
 
+    let pizzaOuter = document.createElement('div');
+    pizzaOuter.className = 'pizza__outer';
+
     let pizzaImg = document.createElement('div');
     pizzaImg.className = 'pizza__img';
 
@@ -208,8 +211,9 @@ let createGrid = (array = pizzaList) => {
     pizzaPrice.className = 'pizza__price';
     pizzaPrice.innerText = `${array[i].price} грн`;
 
-    pizza.append(pizzaImg, pizzaName, pizzaInfo, pizzaPrice);
-    pizzaWrapper.append(pizza);
+    pizza.append(pizzaName, pizzaInfo, pizzaPrice);
+    pizzaOuter.append(pizzaImg, pizza);
+    pizzaWrapper.append(pizzaOuter);
 
     pizza.addEventListener('click', e => {
       let clickTarget = e.target;
@@ -420,6 +424,23 @@ let createGrid = (array = pizzaList) => {
             }
           }
         }
+      }
+
+      if (currentWrapper.id === 'pizza' &&
+          clickTarget.className !== 'pizza__add-btn' &&
+          clickTarget.className !== 'pizza__ingredient' &&
+          clickTarget.className !== 'pizza__ingredient pizza__ingredient--crossedOut') {
+
+        pizza.classList.add('hide-description');
+        pizzaImg.classList.add('show-img');
+      }
+    });
+
+    pizzaImg.addEventListener('click', e => {
+      let clickTarget = e.currentTarget;
+      if (clickTarget.className === 'pizza__img show-img') {
+        pizza.classList.remove('hide-description');
+        pizzaImg.classList.remove('show-img');
       }
     });
   }

@@ -8,12 +8,6 @@ body {
     max-width: 1240px;
 }
 
-.pizza-wrapper {
-    display: flex;
-    justify-content: space-evenly;
-    flex-wrap: wrap;
-}
-
 .list-filters {
     display: flex;
     flex-direction: column;
@@ -28,6 +22,7 @@ body {
 }
 
 .view-mode {
+    margin: 20px 0;
     text-align: center;
 }
 
@@ -35,13 +30,16 @@ body {
     margin-right: 10px;
 }
 
-.filter-wrapper__input {}
+.pizza-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
 
 .pizza {
-    position: relative;
-    margin: 20px;
-    padding: 30px;
+    padding: 20px;
     max-width: 300px;
+    height: 400px;
     border: 2px solid #ff8c00;
     border-radius: 20px;
     box-shadow: 0 0 10px #666;
@@ -49,15 +47,43 @@ body {
 .pizza__img {
     height: 319px;
     width: 300px;
-    background: url("../img/pizza.png"), center, center, no-repeat;
-    background-size: cover;
+    background-size: contain;
+    transform: rotateY(180deg);
+    transition: 1s;
+    backface-visibility: hidden;
+    background: #fff url("../img/pizza.png") no-repeat center center;
 }
+.pizza__outer {
+    position: relative;
+    margin: 20px;
+    padding: 30px;
+    max-width: 300px;
+    height: 400px;
+    perspective: 1000px;
+}
+.pizza {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition: 1s;
+    backface-visibility: hidden;
+    background-color: #fff;
+}
+
+.hide-description {
+    transform: rotateY(180deg);
+}
+.show-img {
+    transform: rotateY(360deg);
+}
+
 .pizza__name {
     text-align: center;
     text-transform: uppercase;
 }
+
 .info {
-    margin-bottom: 30px;
+    margin-bottom: 50px;
     padding: 5px;
     border: 2px solid #000;
     border-radius: 5px;
@@ -199,4 +225,8 @@ li:not(:last-child) {
 }
 .select-ingredient-window__ingredient:not(:last-child) {
     margin-bottom: 5px;
+}
+
+.pizza__ingredient-list {
+    max-height: 200px;
 }
