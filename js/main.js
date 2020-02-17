@@ -1,5 +1,14 @@
 'use strict';
 
+class Ingredient {
+  constructor(name, calories, price) {
+    this.name = name;
+    this.calories = calories;
+    this.price = price;
+    this.crosedOut = false;
+  }
+}
+
 class Pizza {
   constructor(name, ingredients, calories, price) {
     this.name = name;
@@ -9,21 +18,64 @@ class Pizza {
   }
 }
 
-let pizzaList = [];
-for (let key in menu) {
-  let findProperty = propertyName => {
-    for (let keyInner in menu[key]) {
-      if (keyInner === propertyName) return menu[key][keyInner];
-    }
-  };
+let ingredientsList = [];
 
-  pizzaList.push(new Pizza(
-    key,
-    findProperty('ingredients'),
-    findProperty('calories'),
-    findProperty('price'),
-  ));
-}
+let ingredientsXhr = new XMLHttpRequest();
+ingredientsXhr.open('GET', 'json/ingredients.json');
+ingredientsXhr.responseType = 'json';
+ingredientsXhr.onload = () => {
+  let data = ingredientsXhr.response;
+  for (let key in data) {
+    let findProperty = propertyName => {
+      for (let keyInner in data[key]) {
+        if (keyInner === propertyName) return data[key][keyInner];
+      }
+    };
+
+    ingredientsList.push(new Ingredient(
+        key,
+        findProperty('calories'),
+        findProperty('price'),
+    ));
+  }
+};
+ingredientsXhr.send();
+
+let pizzaList = [];
+
+let xhr = new XMLHttpRequest;
+xhr.open('GET', 'json/menu.json');
+xhr.responseType = 'json';
+xhr.onload = () => {
+  if (xhr.status !== 200) {
+    console.log(`${xhr.status}: ${xhr.statusText}`);
+  } else {
+    let menu = xhr.response;
+    for (let item in menu) {
+      let pizzaIngredients = menu[item].ingredients;
+      let caloriesSum = 0;
+      let priceSum = 0;
+
+      for (let i = 0; i < pizzaIngredients.length; i++) {
+        for (let j = 0; j < ingredientsList.length; j++) {
+          if (pizzaIngredients[i] == ingredientsList[j].name) {
+            pizzaIngredients[i] = ingredientsList[j];
+            caloriesSum += ingredientsList[j].calories;
+            priceSum += ingredientsList[j].price;
+          }
+        }
+      }
+
+      pizzaList.push(new Pizza(
+          item,
+          menu[item].ingredients,
+          caloriesSum,
+          priceSum
+      ));
+    }
+  }
+};
+xhr.send();
 
 let container = document.createElement('div');
 container.className = 'container';
@@ -38,7 +90,7 @@ let createList = (array = pizzaList) => {
 
   for (let i = 0; i < array.length; i++) {
     let li = document.createElement('li');
-    li.innerText = `${array[i].name} - ${array[i].price}`;
+    li.innerText = `${array[i].name} - ${array[i].price} грн`;
     ul.append(li);
   }
 
@@ -105,6 +157,10 @@ let createGrid = (array = pizzaList) => {
 
     let pizza = document.createElement('div');
     pizza.className = 'pizza';
+    pizza.setAttribute('id', 'pizza');
+
+    let pizzaOuter = document.createElement('div');
+    pizzaOuter.className = 'pizza__outer';
 
     let pizzaImg = document.createElement('div');
     pizzaImg.className = 'pizza__img';
@@ -127,11 +183,24 @@ let createGrid = (array = pizzaList) => {
       let td = document.createElement('td');
 
       if (thList[j] === 'Ингредиенты:') {
+        let addBtn = document.createElement('button');
+        addBtn.className = 'pizza__add-btn';
+        addBtn.innerText = 'добавить';
+        th.append(addBtn);
+
+        td.className = 'pizza__ingredient-list';
         for (let k = 0; k < tdList[j].length; k++) {
-          k === tdList[j].length - 1 ? td.innerText += tdList[j][k] : td.innerText += `${tdList[j][k]}, `;
+          let span = document.createElement('span');
+          span.className = 'pizza__ingredient';
+          span.innerText = `${tdList[j][k].name} `;
+
+          td.append(span);
         }
-      } else {
-        td.innerText = tdList[j];
+      } else if (thList[j] === 'Калории:') {
+        let span = document.createElement('span');
+        span.className = 'pizza__calories';
+        span.innerText = tdList[j];
+        td.append(span);
       }
 
       tr.append(th, td);
@@ -140,10 +209,240 @@ let createGrid = (array = pizzaList) => {
 
     let pizzaPrice = document.createElement('div');
     pizzaPrice.className = 'pizza__price';
-    pizzaPrice.innerText = array[i].price;
+    pizzaPrice.innerText = `${array[i].price} грн`;
 
-    pizza.append(pizzaImg, pizzaName, pizzaInfo, pizzaPrice);
-    pizzaWrapper.append(pizza);
+    pizza.append(pizzaName, pizzaInfo, pizzaPrice);
+    pizzaOuter.append(pizzaImg, pizza);
+    pizzaWrapper.append(pizzaOuter);
+
+    pizza.addEventListener('click', e => {
+      let clickTarget = e.target;
+      let currentWrapper = e.currentTarget;
+      let currentChildrenList = currentWrapper.children;
+      let pizzaName;
+      let pizzaPrice;
+      let pizzaCalories;
+      let pizzaIngredients;
+
+      for (let i = 0; i < currentChildrenList.length; i++) {
+        if (currentChildrenList[i].className === 'pizza__name') pizzaName = currentChildrenList[i];
+        if (currentChildrenList[i].className === 'pizza__price') pizzaPrice = currentChildrenList[i];
+      }
+
+      let findElement = classSelector => {
+        let collection = document.querySelectorAll(classSelector);
+        for (let i = 0; i < collection.length; i++) {
+          let wrapper = collection[i].closest('.pizza');
+          let childrenList = wrapper.children;
+          let name;
+
+          for (let j = 0; j < childrenList.length; j++) {
+            if (childrenList[j].className === 'pizza__name') {
+              name = childrenList[j].innerHTML;
+              if (name === pizzaName.innerHTML && classSelector === '.pizza__calories') pizzaCalories = collection[i];
+              if (name === pizzaName.innerHTML && classSelector === '.pizza__ingredient-list') pizzaIngredients = collection[i];
+            }
+          }
+        }
+      };
+
+      if (clickTarget.innerText === 'добавить') {
+        findElement('.pizza__calories');
+
+        let selectIngredientOuter = document.createElement('div');
+        selectIngredientOuter.className = 'select-ingredient-window__outer';
+        selectIngredientOuter.addEventListener('click', e => {
+          if (e.target !== selectIngredient) {
+            selectIngredientOuter.remove();
+            selectIngredient.remove();
+          }
+        });
+
+        let selectIngredient = document.createElement('div');
+        selectIngredient.className = 'select-ingredient-window';
+
+        let selectIngredientList = document.createElement('div');
+        selectIngredientList.className = 'select-ingredient-window__list';
+
+        let selectIngredientButtons = document.createElement('div');
+        selectIngredientButtons.className = 'select-ingredient-window__buttons';
+        let doneBtn = document.createElement('button');
+        doneBtn.innerText = 'Подтвердить';
+        let cancelBtn = document.createElement('button');
+        cancelBtn.innerText = 'Отмена';
+        selectIngredientButtons.append(doneBtn, cancelBtn);
+
+        findElement('.pizza__ingredient-list');
+
+        let allIngredients = [];
+        for (let i = 0; i < ingredientsList.length; i++) {
+          allIngredients.push(ingredientsList[i].name);
+        }
+
+        let currentIngredients = [];
+        for (let i = 0; i < pizzaIngredients.children.length; i++) {
+          let ingredientName = pizzaIngredients.children[i].innerText.trim();
+          currentIngredients.push(ingredientName);
+
+        }
+
+        let showIngredients = [];
+        nextIteration: for (let i = 0; i < allIngredients.length; i++) {
+          for (let j = 0; j < currentIngredients.length; j++) {
+            if (allIngredients[i] === currentIngredients[j]) {
+              continue nextIteration;
+            }
+          }
+          showIngredients.push(allIngredients[i])
+        }
+
+        for (let i = 0; i < showIngredients.length; i++) {
+          let span = document.createElement('span');
+          span.className = 'select-ingredient-window__ingredient';
+          span.append(showIngredients[i]);
+          selectIngredientList.append(span);
+        }
+
+        selectIngredient.append(selectIngredientList, selectIngredientButtons);
+
+        document.body.prepend(selectIngredientOuter, selectIngredient);
+
+        selectIngredient.addEventListener('click', e => {
+          let clickModal = e.target;
+
+          if (clickModal.className === 'select-ingredient-window__ingredient') {
+            clickModal.classList.add('select-ingredient-window__ingredient--checked');
+          } else if (clickModal.className === 'select-ingredient-window__ingredient select-ingredient-window__ingredient--checked') {
+            clickModal.classList.remove('select-ingredient-window__ingredient--checked');
+          }
+
+          let selected = [];
+
+          if (clickModal.innerText === 'Подтвердить') {
+            for (let i = 0; i < selectIngredientList.children.length; i++) {
+              if (selectIngredientList.children[i].className === 'select-ingredient-window__ingredient select-ingredient-window__ingredient--checked') {
+                selected.push(selectIngredientList.children[i]);
+
+                selectIngredientList.children[i].className = 'pizza__ingredient';
+                pizzaIngredients.append(selectIngredientList.children[i]);
+                i = -1;
+              }
+            }
+
+            let ingredientsToAdd = [];
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', 'json/ingredients.json');
+            xhr.responseType = 'json';
+            xhr.onload = () => {
+              let data = xhr.response;
+              for (let key in data) {
+                let findProperty = propertyName => {
+                  for (let keyInner in data[key]) {
+                    if (keyInner === propertyName) return data[key][keyInner];
+                  }
+                };
+
+                for (let i = 0; i < selected.length; i++) {
+                  if (selected[i].innerText === key) {
+                    ingredientsToAdd.push(new Ingredient(
+                      key,
+                      findProperty('calories'),
+                      findProperty('price'),
+                    ));
+                  }
+                }
+              }
+
+              for (let i = 0; i < pizzaList.length; i++) {
+                if (pizzaName.textContent === pizzaList[i].name) {
+                  for (let j = 0; j < ingredientsToAdd.length; j++) {
+                    pizzaList[i].ingredients.push(ingredientsToAdd[j]);
+                  }
+                }
+              }
+
+              for (let i = 0; i < pizzaList.length; i++) {
+                if (pizzaName.textContent === pizzaList[i].name) {
+                  let accPrice = 0;
+                  let accCalories = 0;
+
+                  for (let j = 0; j < pizzaList[i].ingredients.length; j++) {
+                    if (pizzaList[i].ingredients[j].crosedOut === false) accPrice += pizzaList[i].ingredients[j].price;
+                    if (pizzaList[i].ingredients[j].crosedOut === false) accCalories += pizzaList[i].ingredients[j].calories;
+                  }
+
+                  pizzaPrice.innerText = accPrice + ' грн';
+                  pizzaCalories.innerText = accCalories;
+                }
+              }
+            };
+            xhr.send();
+
+            selectIngredientOuter.remove();
+            selectIngredient.remove();
+          } else if (clickModal.innerText === 'Отмена') {
+            selectIngredientOuter.remove();
+            selectIngredient.remove();
+          }
+        });
+      }
+
+      if (clickTarget.className === 'pizza__ingredient' || clickTarget.className === 'pizza__ingredient pizza__ingredient--crossedOut') {
+        findElement('.pizza__calories');
+
+        for (let i = 0; i < pizzaList.length; i++) {
+          let listOfIngredients = pizzaList[i].ingredients;
+          for (let j = 0; j < listOfIngredients.length; j++) {
+            if (clickTarget.innerText === listOfIngredients[j].name && pizzaList[i].name === pizzaName.textContent) {
+
+              let hasClass = classCheck => {
+                for (let className of clickTarget.classList) {
+                  if (className === classCheck) {
+                    return true;
+                  }
+                }
+                return false;
+              };
+
+              if (hasClass('pizza__ingredient--crossedOut')) {
+                clickTarget.classList.remove('pizza__ingredient--crossedOut');
+                listOfIngredients[j].crosedOut = false;
+              } else {
+                listOfIngredients[j].crosedOut = true;
+                clickTarget.classList.add('pizza__ingredient--crossedOut');
+              }
+
+              let accPrice = 0;
+              let accCalories = 0;
+              for (let k = 0; k < listOfIngredients.length; k++) {
+                if (listOfIngredients[k].crosedOut === false) accPrice += listOfIngredients[k].price;
+                if (listOfIngredients[k].crosedOut === false) accCalories += listOfIngredients[k].calories;
+              }
+              pizzaPrice.innerText = accPrice + ' грн';
+              pizzaCalories.innerText = accCalories;
+            }
+          }
+        }
+      }
+
+      if (currentWrapper.id === 'pizza' &&
+          clickTarget.className !== 'pizza__add-btn' &&
+          clickTarget.className !== 'pizza__ingredient' &&
+          clickTarget.className !== 'pizza__ingredient pizza__ingredient--crossedOut') {
+
+        pizza.classList.add('hide-description');
+        pizzaImg.classList.add('show-img');
+      }
+    });
+
+    pizzaImg.addEventListener('click', e => {
+      let clickTarget = e.currentTarget;
+      if (clickTarget.className === 'pizza__img show-img') {
+        pizza.classList.remove('hide-description');
+        pizzaImg.classList.remove('show-img');
+      }
+    });
   }
 
   container.append(pizzaWrapper);
@@ -175,7 +474,7 @@ let filterByIngredient = () => {
 
   for (let i = 0; i < pizzaList.length; i++) {
     for (let j = 0; j < pizzaList[i].ingredients.length; j++) {
-      if (pizzaList[i].ingredients[j] === textInputValue) {
+      if (pizzaList[i].ingredients[j].name === textInputValue) {
         filteredPizzaList.push(pizzaList[i]);
       }
     }
