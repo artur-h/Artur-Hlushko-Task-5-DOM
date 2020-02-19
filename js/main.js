@@ -19,6 +19,8 @@ class Pizza {
 }
 
 let ingredientsList = [];
+let pizzaList = [];
+let cartList = [];
 
 let ingredientsXhr = new XMLHttpRequest();
 ingredientsXhr.open('GET', 'json/ingredients.json');
@@ -40,8 +42,6 @@ ingredientsXhr.onload = () => {
   }
 };
 ingredientsXhr.send();
-
-let pizzaList = [];
 
 let xhr = new XMLHttpRequest;
 xhr.open('GET', 'json/menu.json');
@@ -89,13 +89,38 @@ let createList = (array = pizzaList) => {
   let ul = document.createElement('ul');
 
   for (let i = 0; i < array.length; i++) {
+    let buyButton = document.createElement('button');
+    buyButton.innerText = 'ADD TO CART';
+    buyButton.className = 'buy-button';
+
     let li = document.createElement('li');
     li.innerText = `${array[i].name} - ${array[i].price} грн`;
+    li.append(buyButton);
     ul.append(li);
   }
 
   pizzaWrapper.append(ul);
   container.append(pizzaWrapper);
+
+  pizzaWrapper.addEventListener('click', e => {
+    let target = e.target;
+
+    if (target.className === 'buy-button') {
+      let name = target.closest('li').textContent;
+      let textName = name.split(' ');
+      let pizzaName = '';
+      for (let i = 1; i <= textName.indexOf('-'); i++) {
+        if (i === textName.indexOf('-')) {
+          pizzaName += textName[i - 1];
+        } else {
+          pizzaName += textName[i - 1] + ' ';
+        }
+      }
+      for (let i = 0; i < pizzaList.length; i++) {
+        if (pizzaName === pizzaList[i].name) cartList.push(pizzaList[i]);
+      }
+    }
+  });
 };
 
 let createListFilters = () => {
@@ -166,7 +191,7 @@ let createGrid = (array = pizzaList) => {
     pizzaImg.className = 'pizza__img';
 
     let buyButton = document.createElement('button');
-    buyButton.innerText = 'BUY';
+    buyButton.innerText = 'ADD TO CART';
     buyButton.className = 'buy-button';
 
     let pizzaName = document.createElement('h2');
@@ -220,7 +245,14 @@ let createGrid = (array = pizzaList) => {
     pizzaWrapper.append(pizzaOuter);
 
     pizza.addEventListener('click', pizzaEventHandler);
-    buyButton.addEventListener('click', () => {});
+    buyButton.addEventListener('click', e => {
+      let target = e.target;
+      let pizzaName = target.nextElementSibling.textContent;
+
+      for (let i = 0; i < pizzaList.length; i++) {
+        if (pizzaName === pizzaList[i].name) cartList.push(pizzaList[i]);
+      }
+    });
   }
 
   container.append(pizzaWrapper);
@@ -319,6 +351,10 @@ let createGrid = (array = pizzaList) => {
         let pizzaOuter = document.createElement('div');
         pizzaOuter.className = 'pizza__outer';
 
+        let buyButton = document.createElement('button');
+        buyButton.innerText = 'ADD TO CART';
+        buyButton.className = 'buy-button';
+
         let pizzaImg = document.createElement('div');
         pizzaImg.className = 'pizza__img';
 
@@ -368,7 +404,7 @@ let createGrid = (array = pizzaList) => {
         pizzaPrice.className = 'pizza__price';
         pizzaPrice.innerText = `${customPizza.price} грн`;
 
-        pizza.append(pizzaName, pizzaInfo, pizzaPrice);
+        pizza.append(buyButton, pizzaName, pizzaInfo, pizzaPrice);
         pizzaOuter.append(pizzaImg, pizza);
         pizzaWrapper.prepend(pizzaOuter);
 
@@ -521,6 +557,12 @@ function firstSelectedViewMode(e) {
     createGrid();
   }
 
+  let cartButton = document.createElement('button');
+  cartButton.textContent = 'CART';
+  cartButton.className = 'cart';
+  cartButton.setAttribute('id', 'cart');
+  cartButton.addEventListener('click', showCart);
+
   let viewMode = document.createElement('div');
   viewMode.className = 'view-mode';
   viewMode.innerHTML = `
@@ -529,6 +571,7 @@ function firstSelectedViewMode(e) {
             <button class="view-mode__button" id="change-to-grid" onclick="changeViewMode(this)">Режим сетки</button>
         </div>
     `;
+  viewMode.append(cartButton);
   document.body.prepend(viewMode);
 }
 
@@ -548,6 +591,90 @@ let changeViewMode = elem => {
     createGrid();
   } else if (elem.id === 'change-to-grid' && gridMode) alert('Режим просмотра "Сетка" - уже включен.');
 };
+
+function showCart(e) {
+  let overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.setAttribute('id', 'modalOverlay');
+  overlay.innerHTML = `
+      <div class="modal-window" id="modalWindow">
+        <div class="modal-header">
+          <div class="modal-header__top">
+            <div class="modal-title">Корзина</div>  
+            <div class="modal-close" id="modalClose">&times;</div> 
+          </div>
+          <div class="modal-header__bottom">
+            <div class="modal-list" id="modal-list"></div>
+          </div>
+        </div> 
+        <div class="modal-footer">
+          <button class="modal-button" id="modal-confirm">Купить</button>
+          <button class="modal-button" id="modal-cancel">Отмена</button>
+        </div>  
+      </div>
+    `;
+
+  container.before(overlay);
+
+  for (let i = 0; i < cartList.length; i++) {
+    let wrapper = document.createElement('div');
+    wrapper.className = 'cart__pizza-wrapper';
+
+    let img = document.createElement('div');
+    img.className = 'cart__pizza-img';
+
+    let name = document.createElement('h3');
+    name.className = 'cart__pizza-name';
+    name.textContent = cartList[i].name;
+
+    let ingredients = document.createElement('div');
+    ingredients.className = 'cart__pizza-ingredients';
+
+    for (let j = 0; j < cartList[i].ingredients.length; j++) {
+      let ingredient = document.createElement('span');
+      ingredient.className = 'cart__pizza-ingredient';
+      ingredient.textContent = cartList[i].ingredients[j].name + ' ';
+      ingredients.append(ingredient);
+    }
+
+    let calories = document.createElement('div');
+    calories.className = 'cart__pizza-calories';
+    let caloriesDescription = document.createElement('span');
+    caloriesDescription.className = 'cart__pizza-calories-description';
+    caloriesDescription.textContent = 'Калории: ';
+    let caloriesAmount = document.createElement('span');
+    caloriesAmount.className = 'cart__pizza-calories-amount';
+    caloriesAmount.textContent = `${cartList[i].calories}`;
+    calories.append(caloriesDescription, caloriesAmount);
+
+    let price = document.createElement('div');
+    calories.className = 'cart__pizza-calories';
+    let priceDescription = document.createElement('span');
+    priceDescription.className = 'cart__pizza-calories-description';
+    priceDescription.textContent = 'Цена: ';
+    let priceAmount = document.createElement('span');
+    priceAmount.className = 'cart__pizza-price-amount';
+    priceAmount.textContent = `${cartList[i].price}`;
+    price.append(priceDescription, priceAmount);
+
+    wrapper.append(img, name, ingredients, calories, price);
+
+    let list = document.getElementById('modal-list');
+    list.prepend(wrapper);
+  }
+
+  overlay.addEventListener('click', e => {
+    let target = e.target;
+    if (target.id === 'modalOverlay' ||
+      target.id === 'modalClose' ||
+      target.id === 'modal-cancel') overlay.remove();
+
+    if (target.id === 'modal-confirm') {
+      overlay.remove();
+      alert('Заказ отправлен на обработку');
+    }
+  });
+}
 
 function pizzaEventHandler(e) {
   let clickTarget = e.target;
@@ -706,6 +833,9 @@ function pizzaEventHandler(e) {
                 if (pizzaList[i].ingredients[j].crosedOut === false) accCalories += pizzaList[i].ingredients[j].calories;
               }
 
+              pizzaList[i].price = accPrice;
+              pizzaList[i].calories = accPrice;
+
               pizzaPrice.innerText = accPrice + ' грн';
               pizzaCalories.innerText = accCalories;
             }
@@ -753,6 +883,10 @@ function pizzaEventHandler(e) {
             if (listOfIngredients[k].crosedOut === false) accPrice += listOfIngredients[k].price;
             if (listOfIngredients[k].crosedOut === false) accCalories += listOfIngredients[k].calories;
           }
+
+          pizzaList[i].price = accPrice;
+          pizzaList[i].calories = accPrice;
+
           pizzaPrice.innerText = accPrice + ' грн';
           pizzaCalories.innerText = accCalories;
         }
@@ -765,7 +899,8 @@ function pizzaEventHandler(e) {
   if (currentWrapper.id === 'pizza' &&
     clickTarget.className !== 'pizza__add-btn' &&
     clickTarget.className !== 'pizza__ingredient' &&
-    clickTarget.className !== 'pizza__ingredient pizza__ingredient--crossedOut') {
+    clickTarget.className !== 'pizza__ingredient pizza__ingredient--crossedOut' &&
+    clickTarget.className !== 'buy-button') {
 
     pizza.classList.add('hide-description');
     pizzaImg.classList.add('show-img');

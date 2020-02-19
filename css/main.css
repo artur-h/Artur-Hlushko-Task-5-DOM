@@ -302,5 +302,14 @@ li:not(:last-child) {
 }
 
 .buy-button {
-  text-align: right;
+  cursor: pointer;
+}
+
+.cart {
+  cursor: pointer;
+}
+
+.modal-list {
+  height: 270px;
+  overflow: scroll;
 }
