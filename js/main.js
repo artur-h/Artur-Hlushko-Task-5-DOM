@@ -251,7 +251,11 @@ let createGrid = (array = pizzaList) => {
       let pizzaName = target.nextElementSibling.textContent;
 
       for (let i = 0; i < pizzaList.length; i++) {
-        if (pizzaName === pizzaList[i].name) cartList.push(pizzaList[i]);
+        if (pizzaName === pizzaList[i].name) {
+          cartList.push(pizzaList[i]);
+          let serialObj = JSON.stringify(pizzaList[i]);
+          localStorage.setItem('101pizza', serialObj);
+        }
       }
     });
   }
@@ -345,6 +349,8 @@ let createGrid = (array = pizzaList) => {
         );
 
         pizzaList.push(customPizza);
+        let serialObj = JSON.stringify(customPizza);
+        localStorage.setItem('101pizza', serialObj);
 
         let pizza = document.createElement('div');
         pizza.className = 'pizza';
@@ -419,7 +425,11 @@ let createGrid = (array = pizzaList) => {
           let pizzaName = target.nextElementSibling.textContent;
 
           for (let i = 0; i < pizzaList.length; i++) {
-            if (pizzaName === pizzaList[i].name) cartList.push(pizzaList[i]);
+            if (pizzaName === pizzaList[i].name) {
+              cartList.push(pizzaList[i]);
+              let serialObj = JSON.stringify(pizzaList[i]);
+              localStorage.setItem('101pizza', serialObj);
+            }
           }
         });
       }
