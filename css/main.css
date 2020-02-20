@@ -8,6 +8,110 @@ body {
   max-width: 1240px;
 }
 
+.header {
+  background-color: #111a28;
+}
+
+.header__inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.header__logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.header__logo-img {
+  height: 64px;
+  width: 64px;
+}
+
+.header__logo-text {
+  margin-left: 10px;
+  font-family: 'Pacifico', cursive;
+  font-size: 32px;
+  color: #F6CF74;
+
+}
+.header__view-mode {
+  position: relative;
+  left: -100px;
+}
+
+.cart {
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.cart__img {
+  width: 48px;
+  height: 48px;
+  transition: .3s all ease;
+}
+
+.cart__img:hover {
+  transform: scale(1.1);
+}
+
+.view-button {
+  margin-right: 20px;
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: .3s all ease;
+}
+
+.view-button:hover {
+  transform: scale(1.1);
+}
+.view-mode__button {
+  width: 32px;
+  height: 32px;
+}
+
+.button,
+.modal-button,
+.button--danger,
+.button-success,
+.buy-button {
+  padding: 5px 15px;
+  border: 1px solid #000;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  transition: .3s all ease;
+  outline: none;
+}
+
+.button:hover,
+.modal-button:hover,
+.buy-button:hover {
+  background-color: rgba(255, 214, 118, 0.55);
+}
+
+.button--danger:hover {
+  background-color: rgba(255, 0, 4, 0.55);
+}
+
+.button-success:hover {
+  background-color: rgba(20, 255, 4, 0.55);
+}
+
+.modal-empty {
+  margin-top: 30%;
+  text-align: center;
+}
+
+.label-for-select {
+  margin-bottom: 20px;
+}
+
 .list-filters {
   display: flex;
   flex-direction: column;
@@ -23,6 +127,14 @@ body {
 
 .grid-filters__top {
   margin: 20px 0;
+}
+
+.grid-filters__input,
+.select-filter {
+  padding: 5px 15px;
+  border: 1px solid #000;
+  border-radius: 10px;
+  outline: none;
 }
 
 .view-mode {
@@ -89,7 +201,7 @@ body {
 .info {
   margin-bottom: 50px;
   padding: 5px;
-  border: 2px solid #000;
+  border: 1px solid #000;
   border-radius: 5px;
 }
 th {
@@ -126,7 +238,8 @@ li:not(:last-child) {
   display: block;
   position: absolute;
   padding: 40px;
-  border: 3px solid #f00;
+  border: 3px solid #111a28;
+  border-radius: 10px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);

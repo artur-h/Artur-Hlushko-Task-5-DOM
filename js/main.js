@@ -77,9 +77,10 @@ xhr.onload = () => {
 };
 xhr.send();
 
+let main = document.getElementById('main');
 let container = document.createElement('div');
 container.className = 'container';
-document.body.prepend(container);
+main.append(container);
 
 let createList = (array = pizzaList) => {
   let pizzaWrapper = document.createElement('div');
@@ -90,7 +91,7 @@ let createList = (array = pizzaList) => {
 
   for (let i = 0; i < array.length; i++) {
     let buyButton = document.createElement('button');
-    buyButton.innerText = 'ADD TO CART';
+    buyButton.innerText = 'В корзину';
     buyButton.className = 'buy-button';
 
     let li = document.createElement('li');
@@ -128,8 +129,8 @@ let createListFilters = () => {
   filterWrapper.setAttribute('id', 'list-filters');
   filterWrapper.className = 'list-filters';
   filterWrapper.innerHTML = `
-    <label>Сортировать по:
-      <select id="selectFilter" onchange="filterList(this)">
+    <label class="label-for-select">Сортировать по:
+      <select class="select-filter" id="selectFilter" onchange="filterList(this)">
         <option id="emptyOption" value="empty" style="display: none"></option>
         <option value="sortByPrice">цене по убыванию</option>
         <option value="sortByPriceReverse">цене по возрастанию</option>
@@ -191,7 +192,7 @@ let createGrid = (array = pizzaList) => {
     pizzaImg.className = 'pizza__img';
 
     let buyButton = document.createElement('button');
-    buyButton.innerText = 'ADD TO CART';
+    buyButton.innerText = 'В корзину';
     buyButton.className = 'buy-button';
 
     let pizzaName = document.createElement('h2');
@@ -258,7 +259,8 @@ let createGrid = (array = pizzaList) => {
   container.append(pizzaWrapper);
 
   let createNew = document.createElement('button');
-  createNew.className = 'create-new';
+  createNew.setAttribute('id', 'create-new');
+  createNew.className = 'button';
   createNew.innerText = 'Создать новую пиццу';
   let filterWrapper = document.getElementById('filterTop');
   filterWrapper.after(createNew);
@@ -352,7 +354,7 @@ let createGrid = (array = pizzaList) => {
         pizzaOuter.className = 'pizza__outer';
 
         let buyButton = document.createElement('button');
-        buyButton.innerText = 'ADD TO CART';
+        buyButton.innerText = 'В корзину';
         buyButton.className = 'buy-button';
 
         let pizzaImg = document.createElement('div');
@@ -409,6 +411,17 @@ let createGrid = (array = pizzaList) => {
         pizzaWrapper.prepend(pizzaOuter);
 
         pizza.addEventListener('click', pizzaEventHandler);
+
+        modalOverlay.remove();
+
+        buyButton.addEventListener('click', e => {
+          let target = e.target;
+          let pizzaName = target.nextElementSibling.textContent;
+
+          for (let i = 0; i < pizzaList.length; i++) {
+            if (pizzaName === pizzaList[i].name) cartList.push(pizzaList[i]);
+          }
+        });
       }
     });
   });
@@ -424,7 +437,7 @@ let createGridFilters = () => {
                 Фильтровать по одному ингредиенту: 
                 <input type="text" id="filterInput" class="grid-filters__input">
             </label>
-            <button onclick="filterByIngredient()">Фильтровать</button>
+            <button class="button" onclick="filterByIngredient()">Фильтровать</button>
         </div>
     `;
 
@@ -447,7 +460,9 @@ let filterByIngredient = () => {
   }
 
   if (filteredPizzaList.length !== 0) {
+    let createNew = document.getElementById('create-new');
     let grid = document.getElementById('is-grid');
+    createNew.remove();
     grid.remove();
     createGrid(filteredPizzaList);
 
@@ -467,7 +482,7 @@ let filterByIngredient = () => {
       let filterTop = document.getElementById('filterTop');
       let cancelFilter = document.createElement('button');
       cancelFilter.setAttribute('id', 'cancel-filter-by-ingredient');
-      cancelFilter.className = 'cancel-filter';
+      cancelFilter.className = 'button--danger';
       cancelFilter.innerText = 'Отменить фильтрацию';
       cancelFilter.setAttribute('onclick', 'cancelFilterByIngredient()');
       filterTop.append(cancelFilter);
@@ -483,10 +498,12 @@ let cancelFilterByIngredient = () => {
   let cancelBtn = document.getElementById('cancel-filter-by-ingredient');
   let showFiltered = document.getElementById('show-filtered-by-ingredient');
   let textInput = document.getElementById('filterInput');
+  let createNew = document.getElementById('create-new');
 
   grid.remove();
   cancelBtn.remove();
   showFiltered.remove();
+  createNew.remove();
   textInput.value = '';
   createGrid();
 };
@@ -495,6 +512,7 @@ let createCancelListFilterBtn = () => {
   let cancelBtn = document.createElement('button');
   cancelBtn.setAttribute('onclick', 'cancelListFilter()');
   cancelBtn.setAttribute('id', 'cancel-list-filter');
+  cancelBtn.className = 'button--danger';
   cancelBtn.innerText = 'Отменить фильтрацию';
 
   let listFilters = document.getElementById('list-filters');
@@ -537,8 +555,8 @@ modal.className = 'modal';
 modal.innerHTML = `
     <div class="modal__question">В каком режиме просмотра отобразить меню?</div>
     <div class="modal__wrapper">
-        <button class="modal__button" id="list-mode">Режим списка</button>
-        <button class="modal__button" id="grid-mode">Режим сетки</button>
+        <button class="button" id="list-mode">Режим списка</button>
+        <button class="button" id="grid-mode">Режим сетки</button>
     </div>
 `;
 document.body.prepend(modal);
@@ -558,21 +576,30 @@ function firstSelectedViewMode(e) {
   }
 
   let cartButton = document.createElement('button');
-  cartButton.textContent = 'CART';
   cartButton.className = 'cart';
   cartButton.setAttribute('id', 'cart');
+  let cartImg = document.createElement('img');
+  cartImg.className = 'cart__img';
+  cartImg.alt = 'Корзина';
+  cartImg.src = 'img/buy.png';
+  cartButton.append(cartImg);
   cartButton.addEventListener('click', showCart);
 
   let viewMode = document.createElement('div');
   viewMode.className = 'view-mode';
   viewMode.innerHTML = `
-        <div class="view-mode" id="view-mode">
-            <button class="view-mode__button" id="change-to-list" onclick="changeViewMode(this)" >Режим списка</button>
-            <button class="view-mode__button" id="change-to-grid" onclick="changeViewMode(this)">Режим сетки</button>
-        </div>
-    `;
-  viewMode.append(cartButton);
-  document.body.prepend(viewMode);
+    <button class="view-button" id="change-to-list" onclick="changeViewMode(this)">
+      <img src="img/list.png" alt="Список" class="view-mode__button view-mode__button-list">
+    </button>
+    <button class="view-button" id="change-to-grid" onclick="changeViewMode(this)">
+      <img src="img/grid.png" alt="Сетка" class="view-mode__button view-mode__button-grid" >
+    </button>
+  `;
+
+  let view = document.getElementById('header-view-mode');
+  view.append(viewMode);
+  let cart = document.getElementById('header-cart');
+  cart.append(cartButton);
 }
 
 let changeViewMode = elem => {
@@ -603,64 +630,95 @@ function showCart(e) {
             <div class="modal-title">Корзина</div>  
             <div class="modal-close" id="modalClose">&times;</div> 
           </div>
-          <div class="modal-header__bottom">
-            <div class="modal-list" id="modal-list"></div>
-          </div>
+          <div class="modal-header__bottom" id="modal-header-bottom"></div>
         </div> 
-        <div class="modal-footer">
-          <button class="modal-button" id="modal-confirm">Купить</button>
-          <button class="modal-button" id="modal-cancel">Отмена</button>
-        </div>  
+        <div class="modal-footer" id="modal-footer"></div>  
       </div>
     `;
 
   container.before(overlay);
 
-  for (let i = 0; i < cartList.length; i++) {
-    let wrapper = document.createElement('div');
-    wrapper.className = 'cart__pizza-wrapper';
+  if (cartList.length !== 0) {
+    let modalList = document.createElement('div');
+    modalList.className = 'modal-list';
+    modalList.setAttribute('id', 'modal-list');
+    let modalHeaderBottom = document.getElementById('modal-header-bottom');
+    modalHeaderBottom.append(modalList);
 
-    let img = document.createElement('div');
-    img.className = 'cart__pizza-img';
+    let buttonConfirm = document.createElement('button');
+    buttonConfirm.className = 'modal-button';
+    buttonConfirm.setAttribute('id', 'modal-confirm');
+    buttonConfirm.textContent = 'Купить';
+    let buttonCancel = document.createElement('button');
+    buttonCancel.className = 'modal-button';
+    buttonCancel.setAttribute('id', 'modal-cancel');
+    buttonCancel.textContent = 'Отмена';
+    let modalFooter = document.getElementById('modal-footer');
+    modalFooter.append(buttonConfirm, buttonCancel);
 
-    let name = document.createElement('h3');
-    name.className = 'cart__pizza-name';
-    name.textContent = cartList[i].name;
+    for (let i = 0; i < cartList.length; i++) {
+      let wrapper = document.createElement('div');
+      wrapper.className = 'cart__pizza-wrapper';
 
-    let ingredients = document.createElement('div');
-    ingredients.className = 'cart__pizza-ingredients';
+      let img = document.createElement('div');
+      img.className = 'cart__pizza-img';
 
-    for (let j = 0; j < cartList[i].ingredients.length; j++) {
-      let ingredient = document.createElement('span');
-      ingredient.className = 'cart__pizza-ingredient';
-      ingredient.textContent = cartList[i].ingredients[j].name + ' ';
-      ingredients.append(ingredient);
+      let name = document.createElement('h3');
+      name.className = 'cart__pizza-name';
+      name.textContent = cartList[i].name;
+
+      let ingredients = document.createElement('div');
+      ingredients.className = 'cart__pizza-ingredients';
+
+      for (let j = 0; j < cartList[i].ingredients.length; j++) {
+        let ingredient = document.createElement('span');
+        ingredient.className = 'cart__pizza-ingredient';
+        ingredient.textContent = cartList[i].ingredients[j].name + ' ';
+        ingredients.append(ingredient);
+      }
+
+      let calories = document.createElement('div');
+      calories.className = 'cart__pizza-calories';
+      let caloriesDescription = document.createElement('span');
+      caloriesDescription.className = 'cart__pizza-calories-description';
+      caloriesDescription.textContent = 'Калории: ';
+      let caloriesAmount = document.createElement('span');
+      caloriesAmount.className = 'cart__pizza-calories-amount';
+      caloriesAmount.textContent = `${cartList[i].calories}`;
+      calories.append(caloriesDescription, caloriesAmount);
+
+      let price = document.createElement('div');
+      price.className = 'cart__pizza-calories';
+      let priceDescription = document.createElement('span');
+      priceDescription.className = 'cart__pizza-calories-description';
+      priceDescription.textContent = 'Цена: ';
+      let priceAmount = document.createElement('span');
+      priceAmount.className = 'cart__pizza-price-amount';
+      priceAmount.textContent = `${cartList[i].price}`;
+      price.append(priceDescription, priceAmount);
+
+      wrapper.append(img, name, ingredients, calories, price);
+
+      let list = document.getElementById('modal-list');
+      list.prepend(wrapper);
     }
 
-    let calories = document.createElement('div');
-    calories.className = 'cart__pizza-calories';
-    let caloriesDescription = document.createElement('span');
-    caloriesDescription.className = 'cart__pizza-calories-description';
-    caloriesDescription.textContent = 'Калории: ';
-    let caloriesAmount = document.createElement('span');
-    caloriesAmount.className = 'cart__pizza-calories-amount';
-    caloriesAmount.textContent = `${cartList[i].calories}`;
-    calories.append(caloriesDescription, caloriesAmount);
+    overlay.addEventListener('click', e => {
+      let target = e.target;
 
-    let price = document.createElement('div');
-    calories.className = 'cart__pizza-calories';
-    let priceDescription = document.createElement('span');
-    priceDescription.className = 'cart__pizza-calories-description';
-    priceDescription.textContent = 'Цена: ';
-    let priceAmount = document.createElement('span');
-    priceAmount.className = 'cart__pizza-price-amount';
-    priceAmount.textContent = `${cartList[i].price}`;
-    price.append(priceDescription, priceAmount);
+      if (target.id === 'modal-confirm') {
+        cartList.length = 0;
 
-    wrapper.append(img, name, ingredients, calories, price);
-
-    let list = document.getElementById('modal-list');
-    list.prepend(wrapper);
+        overlay.remove();
+        alert('Заказ отправлен в обработку');
+      }
+    });
+  } else {
+    let modalHeaderBottom = document.getElementById('modal-header-bottom');
+    let empty = document.createElement('h2');
+    empty.className = 'modal-empty';
+    empty.textContent = 'Корзина пуста';
+    modalHeaderBottom.append(empty);
   }
 
   overlay.addEventListener('click', e => {
@@ -668,11 +726,6 @@ function showCart(e) {
     if (target.id === 'modalOverlay' ||
       target.id === 'modalClose' ||
       target.id === 'modal-cancel') overlay.remove();
-
-    if (target.id === 'modal-confirm') {
-      overlay.remove();
-      alert('Заказ отправлен на обработку');
-    }
   });
 }
 
@@ -728,8 +781,10 @@ function pizzaEventHandler(e) {
     let selectIngredientButtons = document.createElement('div');
     selectIngredientButtons.className = 'select-ingredient-window__buttons';
     let doneBtn = document.createElement('button');
+    doneBtn.className = 'button-success';
     doneBtn.innerText = 'Подтвердить';
     let cancelBtn = document.createElement('button');
+    cancelBtn.className = 'button--danger';
     cancelBtn.innerText = 'Отмена';
     selectIngredientButtons.append(doneBtn, cancelBtn);
 
@@ -834,7 +889,7 @@ function pizzaEventHandler(e) {
               }
 
               pizzaList[i].price = accPrice;
-              pizzaList[i].calories = accPrice;
+              pizzaList[i].calories = accCalories;
 
               pizzaPrice.innerText = accPrice + ' грн';
               pizzaCalories.innerText = accCalories;
@@ -885,7 +940,7 @@ function pizzaEventHandler(e) {
           }
 
           pizzaList[i].price = accPrice;
-          pizzaList[i].calories = accPrice;
+          pizzaList[i].calories = accCalories;
 
           pizzaPrice.innerText = accPrice + ' грн';
           pizzaCalories.innerText = accCalories;
